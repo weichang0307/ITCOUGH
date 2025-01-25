@@ -115,7 +115,7 @@ object ContinuousAudioRecorder {
 
         }
     }
-    private fun saveCoughAudio() {
+    private fun saveCoughAudio() { 5555
         val dataArray = coughBuffer.toByteArray()
         coughBuffer.reset()
         sendCreateCoughAudioRequest(dataArray)
