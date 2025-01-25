@@ -66,9 +66,10 @@ object ContinuousAudioRecorder {
                 bytesRead = audioRecord?.read(buffer, 0, buffer.size) ?: 0
                 Thread {
                     if (bytesRead < FRAME_SIZE){
-                        if (coughBuffer.size() > 0)
+                        if (coughBuffer.size() > 0){
                             coughBuffer.write(buffer, 0, bytesRead)
                             saveCoughAudio()
+                        }
                     }else{
                         if (yamnetModel != null){
                             val output = yamnetModel?.runInference(byteArrayToFloatArray(buffer))
