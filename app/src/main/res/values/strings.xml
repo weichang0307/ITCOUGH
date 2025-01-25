@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ITCOUGH</string>
+    <string name="title_activity_file">File_Activity</string>
+    <string name="title_activity_gallery">GalleryActivity</string>
+    <string name="title_activity_record_page">RecordPage</string>
+    <string name="title_activity_cough">CoughActivity</string>
+    <string name="title_activity_audio_play">AudioPlayActivity</string>
+    <string name="title_activity_create">CreateActivity</string>
+    <string name="title_activity_ai_generate">AiGenerateActivity</string>
+</resources>

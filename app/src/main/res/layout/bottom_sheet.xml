@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bottomSheet"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_behavior="@string/bottom_sheet_behavior"
+    android:background="@drawable/background_round"
+    android:orientation="vertical">
+
+
+
+
+
+    <LinearLayout
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginBottom="80dp">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMin"
+            android:layout_width="140dp"
+            android:layout_height="60dp"
+            android:textAllCaps="false"
+            android:text="Mimize"
+            android:backgroundTint="@color/gray"
+            android:textColor="@color/grayDark"
+            app:cornerRadius="26dp"
+            app:rippleColor="@color/grayDark"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStop"
+            android:layout_width="140dp"
+            android:layout_height="60dp"
+            android:textAllCaps="false"
+            android:text="Stop"
+            android:layout_marginStart="20dp"
+            android:backgroundTint="@color/playerColor"
+            android:textColor="@color/white"
+            app:cornerRadius="26dp"
+            app:rippleColor="@color/grayDark"/>
+    </LinearLayout>
+</LinearLayout>

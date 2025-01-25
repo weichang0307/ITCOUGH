@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context=".AiGenerateActivity">
+
+    <include
+        android:id="@+id/topBarLayout"
+        layout="@layout/topbar_layout"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI Music Generation"
+                android:textColor="@color/white"
+                android:fontFamily="@font/main_font"
+                android:textSize="30sp"
+                android:paddingTop="70dp"
+                android:paddingBottom="20dp"
+                android:paddingHorizontal="20dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="file name :"
+                android:fontFamily="@font/normal_font"
+                android:layout_marginHorizontal="20dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"/>
+            <EditText
+                android:id="@+id/inputFileName"
+                android:autofillHints="select an instrument"
+                android:inputType="text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/gray_"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="10dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp"
+                android:hint="input file name"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:background="@drawable/input_text_background"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="cough :"
+                android:fontFamily="@font/normal_font"
+                android:layout_marginHorizontal="20dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"/>
+            <EditText
+                android:id="@+id/btnChooseCough"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="select an cough audio"
+                android:textColorHint="@color/gray_"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="10dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp"
+                android:focusable="false"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:background="@drawable/input_text_background"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="bass :"
+                android:fontFamily="@font/normal_font"
+                android:layout_marginHorizontal="20dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"/>
+            <EditText
+                android:id="@+id/btnChooseBass"
+                android:autofillHints="select an instrument"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="select an instrument"
+                android:textColorHint="@color/gray_"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="10dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp"
+                android:focusable="false"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:background="@drawable/input_text_background"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="alto :"
+                android:fontFamily="@font/normal_font"
+                android:layout_marginHorizontal="20dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"/>
+            <EditText
+                android:id="@+id/btnChooseAlto"
+                android:autofillHints="select an instrument"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="select an instrument"
+                android:textColorHint="@color/gray_"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="10dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp"
+                android:focusable="false"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:background="@drawable/input_text_background"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="high :"
+                android:fontFamily="@font/normal_font"
+                android:layout_marginHorizontal="20dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"/>
+            <EditText
+                android:id="@+id/btnChooseHigh"
+                android:autofillHints="select an instrument"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="select an instrument"
+                android:textColorHint="@color/gray_"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="10dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="5dp"
+                android:focusable="false"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:background="@drawable/input_text_background"/>
+
+            <Button
+                android:id="@+id/btnGenerate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:text="Generate"
+                android:textColor="@color/blue"
+                android:backgroundTint="@color/gray"
+                />
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
