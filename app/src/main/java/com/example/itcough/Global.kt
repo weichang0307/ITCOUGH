@@ -1,6 +1,6 @@
 package com.example.itcough
 
-// v4.0
+// v4.1
 
 object Global {
     //public val url = "http://172.20.10.2:8002"
