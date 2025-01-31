@@ -25,7 +25,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var cardFile: CardView
     private lateinit var cardCreate: CardView
     private lateinit var cardStart: ImageButton
-66666
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
