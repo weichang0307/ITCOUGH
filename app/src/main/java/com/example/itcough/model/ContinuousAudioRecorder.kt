@@ -130,7 +130,7 @@ object ContinuousAudioRecorder {
 
     private fun sendCreateCoughAudioRequest(dataArray: ByteArray) {
         try {
-            val url = URL("${Global.url}/create_cough_audio/")
+            val url = URL("${Global.URL}/create_cough_audio/")
             val connection = url.openConnection() as HttpURLConnection
             connection.apply {
                 connectTimeout = 5000

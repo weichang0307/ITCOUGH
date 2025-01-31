@@ -172,7 +172,7 @@ class CoughActivity : AppCompatActivity(), OnItemClickListener {
 
             builder.setPositiveButton("Delete") {_,_->
                 val toDelete = records.filter {it.isChecked}.toTypedArray()
-                val url = "${Global.url}/delete"
+                val url = "${Global.URL}/delete"
                 sendDeletePostRequest(url, toDelete.toList())
                 leaveEditMode()
             }
@@ -198,7 +198,7 @@ class CoughActivity : AppCompatActivity(), OnItemClickListener {
                     Toast.makeText(this,"A name is required", Toast.LENGTH_LONG).show()
                 }else{
 
-                    val url = "${Global.url}/rename"
+                    val url = "${Global.URL}/rename"
                     sendRenamePostRequest(url, record, input, dialog)
                     dialog.dismiss()
                 }
@@ -242,7 +242,7 @@ class CoughActivity : AppCompatActivity(), OnItemClickListener {
 
 
     private fun fetchAll(){
-        sendGetRecordsRequest("${Global.url}/get_records/")
+        sendGetRecordsRequest("${Global.URL}/get_records/")
 
     }
 

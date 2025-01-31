@@ -168,7 +168,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
 
     }
     private fun fetchAll(){
-        sendGetRecordsRequest("${Global.url}/get_records/")
+        sendGetRecordsRequest("${Global.URL}/get_records/")
 
     }
     @SuppressLint("NotifyDataSetChanged")
@@ -315,7 +315,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         btnChooseHigh.isEnabled = false
         btnChooseBass.isEnabled = false
         btnChooseAlto.isEnabled = false
-        val urlString = "${Global.url}/generate/"
+        val urlString = "${Global.URL}/generate/"
         Thread {
             // 创建 URL 对象
             val url = URL(urlString)

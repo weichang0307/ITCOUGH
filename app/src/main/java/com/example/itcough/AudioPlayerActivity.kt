@@ -60,7 +60,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             Toast.makeText(this, "No audio URL provided", Toast.LENGTH_SHORT).show()
             return
         }
-        val url = "${Global.url}/" + "get_uploads_file/" + path.replace("\\", "^")
+        val url = "${Global.URL}/" + "get_uploads_file/" + path.replace("\\", "^")
         Log.d("myTag", url)
         // 播放/暫停按鈕
         playPauseButton = findViewById(R.id.playPauseButton)
