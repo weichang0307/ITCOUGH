@@ -39,37 +39,14 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
 
     private lateinit var btnLeft: ImageButton
     private lateinit var btnRight: ImageButton
-    private lateinit var inputFileName: EditText
     private lateinit var btnChooseCough: EditText
-    private lateinit var btnChooseBass: EditText
-    private lateinit var btnChooseAlto: EditText
-    private lateinit var btnChooseHigh: EditText
     private lateinit var btnGenerate: Button
+    private lateinit var btnAdvanceSetting: Button
     private lateinit var adapter: AdapterChooseFile
     private lateinit var dialog: AlertDialog
     private lateinit var searchInput: TextInputEditText
     private var coughRecord: AudioRecord? = null
-    private val bass_instruments = listOf(
-            "Tuba",
-            "Double Bass",
-            "Bassoon",
-            "Trombone"
-    )
-    private val alto_instruments = listOf(
-            "Viola",
-            "Cello",
-            "Horn",
-            "Clarinet",
-            "Saxophone",
-            "Trombone"
-    )
-    private val high_instruments = listOf(
-            "Violin",
-            "Flute",
-            "Oboe",
-            "Trumpet",
-            "Guitar"
-    )
+
     private var generatePath: String? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,11 +56,8 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         btnLeft = topBarLayout.findViewById(R.id.btnLeft)
         btnRight = topBarLayout.findViewById(R.id.btnRight)
         btnChooseCough = findViewById(R.id.btnChooseCough)
-        inputFileName = findViewById(R.id.inputFileName)
-        btnChooseBass = findViewById(R.id.btnChooseBass)
-        btnChooseAlto = findViewById(R.id.btnChooseAlto)
-        btnChooseHigh = findViewById(R.id.btnChooseHigh)
         btnGenerate = findViewById(R.id.btnGenerate)
+        btnAdvanceSetting = findViewById(R.id.btnAdvanceSetting)
         btnLeft.setOnClickListener {
             finish()
         }
@@ -94,29 +68,16 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         btnRight.setOnClickListener {
             btnGenerate.isClickable = true
             btnGenerate.text = "Generate"
-            inputFileName.isEnabled = true
             btnChooseCough.isEnabled = true
-            btnChooseHigh.isEnabled = true
-            btnChooseBass.isEnabled = true
-            btnChooseAlto.isEnabled = true
-            inputFileName.setText("")
             btnChooseCough.setText("")
-            btnChooseHigh.setText("")
-            btnChooseBass.setText("")
-            btnChooseAlto.setText("")
         }
         btnChooseCough.setOnClickListener(){
             dialog.show()
             fetchAll()
         }
-        btnChooseBass.setOnClickListener(){
-            showMenuDialog(bass_instruments, btnChooseBass)
-        }
-        btnChooseAlto.setOnClickListener(){
-            showMenuDialog(alto_instruments, btnChooseAlto)
-        }
-        btnChooseHigh.setOnClickListener(){
-            showMenuDialog(high_instruments, btnChooseHigh)
+        btnAdvanceSetting.setOnClickListener(){
+            val intent = Intent(this, AdvanceSetting::class.java)
+            startActivity(intent)
         }
         btnGenerate.setOnClickListener(){
             if(btnGenerate.text == "Generate"){
@@ -124,7 +85,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
             }else{
                 val intent = Intent(this, AudioPlayerActivity::class.java)
                 intent.putExtra("FILE_PATH", generatePath) // 假設 record.filePath 是正確的音頻文件路徑
-                intent.putExtra("FILE_NAME", inputFileName.text.toString()) // 假設 record.filePath 是正確的音頻文件路徑
+                intent.putExtra("FILE_NAME", "") // 假設 record.filePath 是正確的音頻文件路徑
                 startActivity(intent)
             }
 
@@ -216,37 +177,6 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         return gson.fromJson(jsonString, listType)
     }
 
-    private fun showMenuDialog(list: List<String>, view: EditText) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.list_layout, null)
-        val listView: ListView = dialogView.findViewById(R.id.listView)
-
-        val adapter = object : ArrayAdapter<String>(this, R.layout.itemview_choose_layout, list) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.itemview_choose_layout, parent, false)
-                val filenameText = view.findViewById<TextView>(R.id.tvFilename)
-                filenameText.text = list[position]
-                return view
-            }
-        }
-        listView.adapter = adapter
-
-        val builder = AlertDialog.Builder(this)
-        builder.setView(dialogView)
-        builder.setNegativeButton("Cancel", null)
-        val dialog = builder.create()
-
-        dialog.window?.apply {
-            setBackgroundDrawableResource(android.R.color.transparent)
-            setDimAmount(0.8f)
-        }
-
-        listView.setOnItemClickListener { _, _, position, _ ->
-            view.setText(list[position])
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
     override fun onItemClickListener(position: Int) {
         runOnUiThread{
             coughRecord = adapter.records[position]
@@ -273,48 +203,20 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         }
     }
     private fun getGenerateData(): Map<String, String>? {
-        if(inputFileName.text.length == 0) {
-            Toast.makeText(this@AiGenerateActivity, "File name can not be empty", Toast.LENGTH_LONG).show()
-            return null
-        }
         if(btnChooseCough.text.length == 0) {
             Toast.makeText(this@AiGenerateActivity, "Select a cough audio", Toast.LENGTH_LONG).show()
             return null
         }
 
-        if(btnChooseBass.text.length == 0) {
-            Toast.makeText(this@AiGenerateActivity, "Select a bass instrument", Toast.LENGTH_LONG).show()
-            return null
-        }
-
-        if(btnChooseAlto.text.length == 0) {
-            Toast.makeText(this@AiGenerateActivity, "Select a alto instrument", Toast.LENGTH_LONG).show()
-            return null
-        }
-
-        if(btnChooseHigh.text.length == 0) {
-            Toast.makeText(this@AiGenerateActivity, "Select a high instrument", Toast.LENGTH_LONG).show()
-            return null
-        }
-
-
         return mapOf(
-            "file_name" to inputFileName.text.toString(),
-            "cough_path" to coughRecord?.filePath.toString(),
-            "bass" to btnChooseBass.text.toString(),
-            "alto" to btnChooseAlto.text.toString(),
-            "high" to btnChooseHigh.text.toString(),
+            "cough_path" to coughRecord?.filePath.toString()
         )
     }
     private fun sendGeneratePostRequest() {
         val generateData = getGenerateData() ?: return
         btnGenerate.isClickable = false
         btnGenerate.text = "Generating..."
-        inputFileName.isEnabled = false
         btnChooseCough.isEnabled = false
-        btnChooseHigh.isEnabled = false
-        btnChooseBass.isEnabled = false
-        btnChooseAlto.isEnabled = false
         val urlString = "${Global.URL}/generate/"
         Thread {
             // 创建 URL 对象

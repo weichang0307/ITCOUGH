@@ -7,4 +7,5 @@
     <string name="title_activity_audio_play">AudioPlayActivity</string>
     <string name="title_activity_create">CreateActivity</string>
     <string name="title_activity_ai_generate">AiGenerateActivity</string>
+    <string name="title_activity_advance_setting">AdvanceSetting</string>
 </resources>
