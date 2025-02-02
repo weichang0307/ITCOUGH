@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
-import android.media.MediaRecorder
 import android.os.Handler
 import android.print.PrintAttributes.Margins
 import android.util.Log
@@ -17,25 +16,37 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.MappedByteBuffer
+import android.app.*
+import android.content.Intent
+import android.media.MediaRecorder
+import android.os.Build
+import android.os.IBinder
+import android.widget.RemoteViews
+import androidx.core.app.NotificationCompat
+import com.example.itcough.MainActivity
+import com.example.itcough.NotificationActionReceiver
+import com.example.itcough.R
+import java.io.File
 
-object ContinuousAudioRecorder {
-    private const val SAMPLE_RATE = 16000
+
+class ContinuousAudioRecorder: Service() {
+    private val SAMPLE_RATE = 16000
     private val bufferSize = AudioRecord.getMinBufferSize(
         SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
     )
-    private const val FRAME_SIZE = 31200 //SAMPLE_RATE * 2 * 0.975
-    private const val MARGIN_SIZE_FRAMES = 2
-    private const val MAX_COUGH_BUFFER_SIZE_FRAMES = 10
-    private const val MARGIN_SIZE = FRAME_SIZE * MARGIN_SIZE_FRAMES
-    private const val MAX_COUGH_BUFFER_SIZE = FRAME_SIZE * MAX_COUGH_BUFFER_SIZE_FRAMES
-    private const val COUGH_THRESHOLD = 0.2
+    private val FRAME_SIZE = 31200 //SAMPLE_RATE * 2 * 0.975
+    private val MARGIN_SIZE_FRAMES = 2
+    private val MAX_COUGH_BUFFER_SIZE_FRAMES = 10
+    private val MARGIN_SIZE = FRAME_SIZE * MARGIN_SIZE_FRAMES
+    private val MAX_COUGH_BUFFER_SIZE = FRAME_SIZE * MAX_COUGH_BUFFER_SIZE_FRAMES
+    private val COUGH_THRESHOLD = 0.2
+    private val CHANNEL_ID = "RecordServiceChannel"
 
 
     private var audioRecord: AudioRecord? = null
 
     private var coroutineScope = CoroutineScope(Dispatchers.IO)
-    public var isRecording = false
-    public var yamnetModel: YamnetModel? = null
+    private lateinit var yamnetModel: YamnetModel
 
     private var marginFrameAmount = 0
 
@@ -61,8 +72,8 @@ object ContinuousAudioRecorder {
         coroutineScope.launch {
             val buffer = ByteArray(FRAME_SIZE)
             var bytesRead: Int
-            isRecording = true
-            while (isRecording) {
+            Global.isRecording = true
+            while (Global.isRecording) {
                 bytesRead = audioRecord?.read(buffer, 0, buffer.size) ?: 0
                 Thread {
                     if (bytesRead < FRAME_SIZE){
@@ -71,41 +82,36 @@ object ContinuousAudioRecorder {
                             saveCoughAudio()
                         }
                     }else{
-                        if (yamnetModel != null){
-                            val output = yamnetModel?.runInference(byteArrayToFloatArray(buffer))
-                            val confidence = output?.get(42)
-                            Log.d("myTag","分類ID: cough, 分數: $confidence")
-                            if (confidence != null && confidence > COUGH_THRESHOLD){
-                                if (coughBuffer.size() == 0){
-                                    coughBuffer.write(marginBuffer, 0, marginFrameAmount * FRAME_SIZE)
-                                }
-                                marginFrameAmount = 0
-                                coughBuffer.write(buffer, 0, FRAME_SIZE)
-                                if (coughBuffer.size()>MAX_COUGH_BUFFER_SIZE) {
-                                    saveCoughAudio()
-                                }
-                            }else{
-                                if (coughBuffer.size() > 0) {
-                                    if (marginFrameAmount < MARGIN_SIZE_FRAMES) {
-                                        coughBuffer.write(buffer, 0, FRAME_SIZE)
-                                        System.arraycopy(buffer, 0, marginBuffer, marginFrameAmount * FRAME_SIZE, FRAME_SIZE)
-                                        marginFrameAmount++
-                                    }else{
-                                        saveCoughAudio()
-                                        System.arraycopy(marginBuffer, FRAME_SIZE, marginBuffer, 0, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE)
-                                        System.arraycopy(buffer, 0, marginBuffer, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE, FRAME_SIZE)
-                                        marginFrameAmount = MARGIN_SIZE_FRAMES
-                                    }
+                        val output = yamnetModel?.runInference(byteArrayToFloatArray(buffer))
+                        val confidence = output?.get(42)
+                        Log.d("myTag","分類ID: cough, 分數: $confidence")
+                        if (confidence != null && confidence > COUGH_THRESHOLD){
+                            if (coughBuffer.size() == 0){
+                                coughBuffer.write(marginBuffer, 0, marginFrameAmount * FRAME_SIZE)
+                            }
+                            marginFrameAmount = 0
+                            coughBuffer.write(buffer, 0, FRAME_SIZE)
+                            if (coughBuffer.size()>MAX_COUGH_BUFFER_SIZE) {
+                                saveCoughAudio()
+                            }
+                            Global.isDetected = true
+                        }else{
+                            if (coughBuffer.size() > 0) {
+                                if (marginFrameAmount < MARGIN_SIZE_FRAMES) {
+                                    coughBuffer.write(buffer, 0, FRAME_SIZE)
+                                    System.arraycopy(buffer, 0, marginBuffer, marginFrameAmount * FRAME_SIZE, FRAME_SIZE)
+                                    marginFrameAmount++
                                 }else{
+                                    saveCoughAudio()
                                     System.arraycopy(marginBuffer, FRAME_SIZE, marginBuffer, 0, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE)
                                     System.arraycopy(buffer, 0, marginBuffer, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE, FRAME_SIZE)
                                     marginFrameAmount = MARGIN_SIZE_FRAMES
                                 }
-
-
+                            }else{
+                                System.arraycopy(marginBuffer, FRAME_SIZE, marginBuffer, 0, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE)
+                                System.arraycopy(buffer, 0, marginBuffer, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE, FRAME_SIZE)
+                                marginFrameAmount = MARGIN_SIZE_FRAMES
                             }
-
-
                         }
 
 
@@ -115,21 +121,22 @@ object ContinuousAudioRecorder {
 
         }
     }
-    private fun saveCoughAudio() { 5555
+    private fun saveCoughAudio() {
         val dataArray = coughBuffer.toByteArray()
         coughBuffer.reset()
         sendCreateCoughAudioRequest(dataArray)
     }
     fun stopRecording() {
-        isRecording = false
+        Global.isRecording = false
         audioRecord?.stop()
         audioRecord?.release()
-        yamnetModel?.close()
+        yamnetModel.close()
 
     }
 
     private fun sendCreateCoughAudioRequest(dataArray: ByteArray) {
         try {
+            Log.d("myTag", Global.URL)
             val url = URL("${Global.URL}/create_cough_audio/")
             val connection = url.openConnection() as HttpURLConnection
             connection.apply {
@@ -148,6 +155,7 @@ object ContinuousAudioRecorder {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 Log.d("myTag", "Upload successful")
                 Log.d("myTag", "cough file saved")
+                sendNotification(this, "ITCOUGH", "cough file saved")
             } else {
                 Log.d("myTag", "Upload failed with response code: $responseCode")
             }
@@ -165,4 +173,103 @@ object ContinuousAudioRecorder {
         }
         return floatArray
     }
+    private fun createNotification(): Notification {
+        // 引用自訂佈局
+        val notificationLayout = RemoteViews(packageName, R.layout.notification_detecting)
+
+        // 綁定通知內容
+        notificationLayout.setTextViewText(R.id.notification_title, "Cough Detector")
+        notificationLayout.setTextViewText(R.id.notification_text, "detecting...")
+
+        // 設置按鈕點擊事件
+        val stopIntent = Intent(this, NotificationActionReceiver::class.java).apply {
+            action = "ACTION_STOP_RECORDING"
+        }
+        val stopPendingIntent = PendingIntent.getBroadcast(
+            this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        notificationLayout.setOnClickPendingIntent(R.id.btn_stop, stopPendingIntent)
+
+        // 建立通知
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_mic)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle()) // 自訂樣式
+            .setCustomContentView(notificationLayout) // 設置自訂佈局
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setDeleteIntent(stopPendingIntent)
+            .build()
+    }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID, "Custom Recording Service", NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopRecording()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+    override fun onCreate() {
+        super.onCreate()
+        yamnetModel = YamnetModel(this)
+
+        createNotificationChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(1, createNotification())
+        startRecording()
+        return START_STICKY
+    }
+
+
+
+    fun sendNotification(context: Context, title: String, message: String) {
+        val CHANNEL_ID = "my_notification_channel"
+        val notificationId = 2
+
+        // 創建通知頻道（適用於 Android 8.0 及以上）
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "My Channel",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "This is my notification channel"
+            }
+
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // 設置點擊通知時的動作
+        val intent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // 創建通知
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_audio_file) // 設定通知圖標
+            .setContentTitle(title) // 設定標題
+            .setContentText(message) // 設定內容
+            .setContentIntent(pendingIntent) // 點擊通知後執行的 Intent
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // 設置高優先級（適用於 Android 7.1 以下）
+            .build()
+
+        // 發送通知
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager.notify(notificationId, notification)
+    }
+
 }

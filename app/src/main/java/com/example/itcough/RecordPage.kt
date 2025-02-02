@@ -70,6 +70,7 @@ class RecordPage : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.record_page)
 
+
         btnLeft = findViewById(R.id.btnLeft)
         btnRight = findViewById(R.id.btnRight)
         btnLeft.setOnClickListener {
@@ -104,11 +105,11 @@ class RecordPage : ComponentActivity() {
         tvStatus = findViewById(R.id.tvStatus)
 
         tvTimer.setOnClickListener{
-            if(!ContinuousAudioRecorder.isRecording){
+            if(!Global.isRecording){
                 startRecording()
             }
         }
-        if(ContinuousAudioRecorder.isRecording){
+        if(Global.isRecording){
             tvStatus.text = "Detecting"
             startPulse()
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -120,11 +121,12 @@ class RecordPage : ComponentActivity() {
         stopRecording()
         stopPulse()
         dismiss()
-        ContinuousAudioRecorder.isRecording = false
+        Global.isRecording = false
         tvStatus.setText("Start")
 
+
     }
-    private val requestPermissionLauncher = registerForActivityResult(
+    private val requestAudioPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
@@ -133,6 +135,18 @@ class RecordPage : ComponentActivity() {
         } else {
             // Permission denied: Notify the user
             Toast.makeText(this, "Audio recording permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted: Start recording
+            requestAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+
+        } else {
+            // Permission denied: Notify the user
+            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
         }
     }
     private fun startRecording(){
@@ -144,18 +158,15 @@ class RecordPage : ComponentActivity() {
             interpolator = AccelerateDecelerateInterpolator()
         }
         fadeInAnimator.start()
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.RECORD_AUDIO
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // Launch the permission request
-            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             return
         }
-        ContinuousAudioRecorder.yamnetModel = YamnetModel(this)
-        ContinuousAudioRecorder.isRecording = true
         startStreaming()
     }
     private fun startPulse() {
@@ -169,7 +180,9 @@ class RecordPage : ComponentActivity() {
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
     private fun startStreaming(){
-        ContinuousAudioRecorder.startRecording()
+        val intent = Intent(this, ContinuousAudioRecorder::class.java)
+        startService(intent)
+        Global.isRecording = true
         tvStatus.text = "Detecting"
         startPulse()
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -178,26 +191,55 @@ class RecordPage : ComponentActivity() {
     private var cough_detecting = object : Runnable {
         override fun run() {
 
-            imgAnimation1.animate().scaleX(7f).scaleY(7f).alpha(0f).setDuration(1200)
-                .withEndAction {
-                    imgAnimation1.scaleX = 1f
-                    imgAnimation1.scaleY = 1f
-                    imgAnimation1.alpha = 1f
-                }
 
-            imgAnimation2.animate().scaleX(7f).scaleY(7f).alpha(0f).setDuration(700)
-                .withEndAction {
-                    imgAnimation2.scaleX = 1f
-                    imgAnimation2.scaleY = 1f
-                    imgAnimation2.alpha = 1f
-                }
+            if (Global.isDetected) {
+                imgAnimation3.animate().scaleX(7f).scaleY(7f).alpha(0f).setDuration(1200)
+                    .withEndAction {
+                        imgAnimation3.scaleX = 1f
+                        imgAnimation3.scaleY = 1f
+                        imgAnimation3.alpha = 1f
+                    }
 
-            handlerAnimation.postDelayed(this, 1500)
+                imgAnimation4.animate().scaleX(7f).scaleY(7f).alpha(0f).setDuration(700)
+                    .withEndAction {
+                        imgAnimation4.scaleX = 1f
+                        imgAnimation4.scaleY = 1f
+                        imgAnimation4.alpha = 1f
+                    }
+                Global.isDetected = false
+            }else{
+                imgAnimation1.animate().scaleX(7f).scaleY(7f).alpha(0f).setDuration(1200)
+                    .withEndAction {
+                        imgAnimation1.scaleX = 1f
+                        imgAnimation1.scaleY = 1f
+                        imgAnimation1.alpha = 1f
+                    }
+
+                imgAnimation2.animate().scaleX(7f).scaleY(7f).alpha(0f).setDuration(700)
+                    .withEndAction {
+                        imgAnimation2.scaleX = 1f
+                        imgAnimation2.scaleY = 1f
+                        imgAnimation2.alpha = 1f
+                    }
+
+            }
+            if (Global.isRecording) {
+                handlerAnimation.postDelayed(this, 1300)
+            }else{
+                runOnUiThread {
+                    Log.d("myTag", "stopRecorder")
+                    stopRecording()
+                    stopPulse()
+                    dismiss()
+                    tvStatus.setText("Start")
+                }
+            }
         }
     }
 
     private fun stopRecording() {
-        ContinuousAudioRecorder.stopRecording()
+        val intent = Intent(this, ContinuousAudioRecorder::class.java)
+        stopService(intent)
     }
 }
 
