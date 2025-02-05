@@ -37,6 +37,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.12.0" }
 tensorflow-lite-task-audio = { group = "org.tensorflow", name = "tensorflow-lite-task-audio", version = "0.4.2" }
+googlesignin = { group = "com.google.android.gms", name = "play-services-auth", version = "20.7.0" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

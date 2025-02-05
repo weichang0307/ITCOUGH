@@ -60,6 +60,7 @@
                 android:textColorHint="@color/gray_"
                 android:textSize="15sp" />
 
+
             <Button
                 android:id="@+id/btnGenerate"
                 android:layout_width="wrap_content"
@@ -68,8 +69,14 @@
                 android:backgroundTint="@color/gray"
                 android:text="Generate"
                 android:textColor="@color/blue" />
-
-
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:backgroundTint="@color/gray"
+                android:text="Save"
+                android:textColor="@color/blue" />
         </LinearLayout>
     </ScrollView>
     <Button
@@ -82,4 +89,5 @@
         android:backgroundTint="@color/green"
         android:text="Advance Setting"
         android:textColor="@color/white" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

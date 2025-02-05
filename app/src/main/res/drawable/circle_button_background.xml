@@ -1,0 +1,5 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/white" /> <!-- 圓形顏色，可更改 -->
+    <size android:width="50dp" android:height="50dp" />
+    <corners android:radius="25dp" /> <!-- 圓角半徑，設置為寬高的一半 -->
+</shape>

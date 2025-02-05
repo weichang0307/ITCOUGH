@@ -451,34 +451,44 @@ class GalleryActivity : AppCompatActivity(), OnItemClickListener {
             try {
                 connection = url.openConnection() as HttpURLConnection
                 connection.apply {
-                    requestMethod = "GET"
+                    requestMethod = "POST"
                     connectTimeout = 5000
                     readTimeout = 5000
+                    doInput = true
+                    doOutput = true // 允許輸出
+                    setRequestProperty("Content-Type", "application/json") // 設置請求類型為 JSON
                 }
 
-                // 读取响应
+                // 創建要傳輸的 JSON 數據
+                val jsonPayload = """{"userId": "${Global.userID}"}"""
+                val outputStream = connection.outputStream
+                outputStream.write(jsonPayload.toByteArray())
+                outputStream.flush()
+                outputStream.close()
+
+                // 讀取響應
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
                     Log.d("myTest", "Request was successful")
                     Log.d("myTest", parseAudioRecords(response)[0].filePath)
-                    runOnUiThread{
+                    runOnUiThread {
                         allrecords.clear()
                         allrecords.addAll(parseAudioRecords(response))
                         searchInput.setText("")
                         searchDatabase("")
                     }
-
                 } else {
                     Log.d("myTag", "Request failed with response code: $responseCode")
                 }
             } catch (e: Exception) {
-                Log.e("myTag", "Error sending GET request", e)
+                Log.e("myTag", "Error sending POST request", e)
             } finally {
                 connection?.disconnect()
             }
         }.start()
     }
+
     private fun parseAudioRecords(jsonString: String): List<AudioRecord> {
         val gson = Gson()
         val listType = object : TypeToken<List<AudioRecord>>() {}.type

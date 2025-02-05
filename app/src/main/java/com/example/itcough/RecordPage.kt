@@ -114,7 +114,7 @@ class RecordPage : ComponentActivity() {
             startPulse()
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
-
+        Global.isDetected = false
     }
     private fun stopRecorder(){
         Log.d("myTag", "stopRecorder")

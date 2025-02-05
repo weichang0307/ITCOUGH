@@ -135,34 +135,52 @@ class ContinuousAudioRecorder: Service() {
     }
 
     private fun sendCreateCoughAudioRequest(dataArray: ByteArray) {
-        try {
-            Log.d("myTag", Global.URL)
-            val url = URL("${Global.URL}/create_cough_audio/")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.apply {
-                connectTimeout = 5000
-                readTimeout = 20000
-                doOutput = true
-                requestMethod = "POST"
-                setRequestProperty("Content-Type", "application/octet-stream")
-            }
-            connection.outputStream.use { outputStream ->
-                outputStream.write(dataArray)
-                outputStream.flush()
-            }
+        Thread {
+            try {
+                val url = URL("${Global.URL}/create_cough_audio/")
+                val boundary = "Boundary-" + System.currentTimeMillis()
+                val connection = url.openConnection() as HttpURLConnection
+                connection.apply {
+                    doOutput = true
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+                }
 
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                Log.d("myTag", "Upload successful")
-                Log.d("myTag", "cough file saved")
-                sendNotification(this, "ITCOUGH", "cough file saved")
-            } else {
-                Log.d("myTag", "Upload failed with response code: $responseCode")
+                connection.outputStream.use { outputStream ->
+                    val writer = outputStream.bufferedWriter()
+
+                    // 添加 JSON 數據部分
+                    writer.write("--$boundary\r\n")
+                    writer.write("Content-Disposition: form-data; name=\"metadata\"\r\n\r\n")
+                    writer.write("""{"userId": "${Global.userID}"}""")
+                    writer.write("\r\n")
+
+                    // 添加文件部分
+                    writer.write("--$boundary\r\n")
+                    writer.write("Content-Disposition: form-data; name=\"file\"; filename=\"audio.wav\"\r\n")
+                    writer.write("Content-Type: audio/wav\r\n\r\n")
+                    writer.flush()
+
+                    outputStream.write(dataArray)  // 寫入音檔數據
+                    outputStream.flush()
+
+                    writer.write("\r\n--$boundary--\r\n")
+                    writer.flush()
+                }
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Log.d("myTag", "Upload successful")
+                } else {
+                    Log.d("myTag", "Upload failed with response code: $responseCode")
+                }
+            } catch (e: Exception) {
+                Log.e("myTag", "Error uploading data", e)
             }
-        } catch (e: IOException) {
-            Log.e("myTag", "Error uploading data", e)
-        }
+        }.start()
     }
+
+
     private fun byteArrayToFloatArray(buffer: ByteArray): FloatArray {
         val floatArray = FloatArray(buffer.size / 2) // 每兩個字節組成一個浮點數
         for (i in floatArray.indices) {

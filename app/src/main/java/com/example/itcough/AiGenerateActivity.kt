@@ -1,27 +1,25 @@
 package com.example.itcough
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ListView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
-import androidx.cardview.widget.CardView
-import androidx.compose.ui.graphics.BlendMode.Companion.Color
-import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.itcough.model.AudioRecord
@@ -34,6 +32,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.UUID
 
 class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
 
@@ -41,13 +40,18 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
     private lateinit var btnRight: ImageButton
     private lateinit var btnChooseCough: EditText
     private lateinit var btnGenerate: Button
+    private lateinit var btnSave: Button
     private lateinit var btnAdvanceSetting: Button
     private lateinit var adapter: AdapterChooseFile
     private lateinit var dialog: AlertDialog
     private lateinit var searchInput: TextInputEditText
     private var coughRecord: AudioRecord? = null
 
+
     private var generatePath: String? = ""
+    private var temperUUID: String? = null
+    private var isGenerate = false
+    private var isGenerating = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,19 +61,37 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         btnRight = topBarLayout.findViewById(R.id.btnRight)
         btnChooseCough = findViewById(R.id.btnChooseCough)
         btnGenerate = findViewById(R.id.btnGenerate)
+        btnSave = findViewById(R.id.btnSave)
         btnAdvanceSetting = findViewById(R.id.btnAdvanceSetting)
+
+        btnSave.isVisible = false
+
         btnLeft.setOnClickListener {
-            finish()
-        }
-        btnRight.setOnClickListener {
-            startActivity(Intent(this, GalleryActivity::class.java))
+            if (isGenerate){
+                showDiscardFileDialog(this){
+                    finish()
+                }
+            }else if (isGenerating){
+                showCancelGenerationDialog(this){
+                    finish()
+                }
+            }else{
+                finish()
+            }
         }
         btnRight.setBackgroundResource(R.drawable.ic_renew)
         btnRight.setOnClickListener {
-            btnGenerate.isClickable = true
-            btnGenerate.text = "Generate"
-            btnChooseCough.isEnabled = true
-            btnChooseCough.setText("")
+            if (isGenerate){
+                showDiscardFileDialog(this){
+                    refreshUI()
+                }
+            }else if (isGenerating){
+                showCancelGenerationDialog(this){
+                    refreshUI()
+                }
+            }else{
+                refreshUI()
+            }
         }
         btnChooseCough.setOnClickListener(){
             dialog.show()
@@ -89,6 +111,9 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
                 startActivity(intent)
             }
 
+        }
+        btnSave.setOnClickListener(){
+            if (isGenerate) showSaveFileDialog(this)
         }
 
 
@@ -132,6 +157,19 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         sendGetRecordsRequest("${Global.URL}/get_records/")
 
     }
+    private fun refreshUI(){
+        if (isGenerate) sendSaveMusicRequest("")
+        btnGenerate.isClickable = true
+        btnGenerate.text = "Generate"
+        btnChooseCough.isEnabled = true
+        btnSave.isVisible = false
+        temperUUID = null
+        btnChooseCough.setText("")
+        isGenerate = false
+        isGenerating = false
+
+
+    }
     @SuppressLint("NotifyDataSetChanged")
     private fun sendGetRecordsRequest(urlString: String) {
         Thread {
@@ -140,11 +178,19 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
             try {
                 connection = url.openConnection() as HttpURLConnection
                 connection.apply {
-                    requestMethod = "GET"
+                    requestMethod = "POST"
                     connectTimeout = 5000
                     readTimeout = 5000
+                    doInput = true
+                    doOutput = true // 允許輸出
+                    setRequestProperty("Content-Type", "application/json")
                 }
-
+                // 創建要傳輸的 JSON 數據
+                val jsonPayload = """{"userId": "${Global.userID}"}"""
+                val outputStream = connection.outputStream
+                outputStream.write(jsonPayload.toByteArray())
+                outputStream.flush()
+                outputStream.close()
                 // 读取响应
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -208,8 +254,14 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
             return null
         }
 
+        temperUUID = UUID.randomUUID().toString()
         return mapOf(
-            "cough_path" to coughRecord?.filePath.toString()
+            "cough_path" to coughRecord?.filePath.toString(),
+            "user_id" to Global.userID.toString(),
+            "alto" to Global.alto,
+            "bass" to Global.bass,
+            "high" to Global.high,
+            "uuid" to temperUUID.toString()
         )
     }
     private fun sendGeneratePostRequest() {
@@ -243,6 +295,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
                     outputStream.write(jsonData.toByteArray())
                     outputStream.flush()
                 }
+                isGenerating = true
 
                 // 获取响应代码
                 val responseCode = connection.responseCode
@@ -253,13 +306,15 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
                     runOnUiThread{
                         btnGenerate.isClickable = true
                         btnGenerate.text = "Play"
-                        Toast.makeText(this@AiGenerateActivity, "Generate was successful", Toast.LENGTH_LONG).show()
+                        btnSave.isVisible = true
+                        isGenerate = true
+                        isGenerating = false
                     }
 
 
                 } else {
+                    isGenerating = false
                     Log.d("myTag", "Request failed with response code: $responseCode")
-
                 }
             } catch (e: IOException) {
                 Log.e("myTag", "Error sending request", e)
@@ -281,4 +336,137 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         return map
     }
 
+    fun sendSaveMusicRequest(fileName: String){
+        if (temperUUID == null) return
+        val urlString = "${Global.URL}/save_music/"
+        Thread {
+            // 创建 URL 对象
+            val url = URL(urlString)
+
+            // 打开连接
+            val connection = url.openConnection() as HttpURLConnection
+
+            try {
+                // 设置请求方法为 POST
+                connection.requestMethod = "POST"
+                connection.connectTimeout = 5000
+                connection.readTimeout = 500000
+
+                // 设置请求头，表明我们发送的是 JSON 数据
+                connection.setRequestProperty("Content-Type", "application/json")
+
+                // 启用输出流，以便我们可以发送请求体数据
+                connection.doOutput = true
+                val jsonData = Gson().toJson(mapOf(
+                    "user_id" to Global.userID,
+                    "uuid" to temperUUID,
+                    "file_name" to fileName
+                ))
+                // 发送 JSON 数据
+                connection.outputStream.use { outputStream ->
+                    // 将 JSON 数据转换为字节并写入输出流
+                    outputStream.write(jsonData.toByteArray())
+                    outputStream.flush()
+                }
+
+                // 获取响应代码
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Log.d("myTag", "Request was successful")
+                    runOnUiThread{
+                        refreshUI()
+                    }
+
+
+                } else {
+                    Log.d("myTag", "Request failed with response code: $responseCode")
+                }
+            } catch (e: IOException) {
+                Log.e("myTag", "Error sending request", e)
+            } finally {
+                connection.disconnect() // 关闭连接
+            }
+        }.start()
+    }
+    fun showSaveFileDialog(context: Context) {
+        val builder = AlertDialog.Builder(context)
+        builder.setMessage("Save Generated Music")
+        // 創建 EditText 讓使用者輸入
+        val input = EditText(context)
+        input.hint = "input file name"
+
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(50, 20, 50, 20)
+        layout.addView(input)
+
+        builder.setView(layout)
+
+        // 設置按鈕
+        builder.setPositiveButton("save") { _, _ ->
+            val fileName = input.text.toString().trim()
+            if (fileName.isNotEmpty()) {
+                sendSaveMusicRequest(fileName)
+            } else {
+                Toast.makeText(context, "file name can not be empty", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        builder.setNegativeButton("cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.show()
+    }
+    fun showDiscardFileDialog(context: Context, onDiscard: () -> Unit) {
+        AlertDialog.Builder(context)
+            .setMessage("There is an unsaved file")
+            .setNegativeButton("Discard") { _, _ ->
+                onDiscard() // 用户确认放弃时调用
+            }
+            .setPositiveButton("Save") { dialog, _ ->
+                dialog.dismiss() // 关闭对话框
+                showSaveFileDialog(context) // 弹出保存文件的对话框
+            }
+            .setNeutralButton("Cancel") { dialog, _ ->
+                dialog.dismiss() // 只关闭对话框，什么也不做
+            }
+            .show()
+    }
+    fun showCancelGenerationDialog(context: Context, onDiscard: () -> Unit) {
+        AlertDialog.Builder(context)
+            .setMessage("You want to discard the generating process?")
+            .setNegativeButton("Discard") { _, _ ->
+                onDiscard() // 用户确认放弃时调用
+            }
+            .setNeutralButton("Cancel") { dialog, _ ->
+                dialog.dismiss() // 只关闭对话框，什么也不做
+            }
+            .show()
+    }
+
+    override fun onDestroy() {
+        sendSaveMusicRequest("")
+        super.onDestroy()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            if (isGenerate){
+                showDiscardFileDialog(this){
+                    finish()
+                }
+            }else if (isGenerating){
+                showCancelGenerationDialog(this){
+                    finish()
+                }
+            }else{
+                finish()
+            }
+
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event)
+    }
 }
