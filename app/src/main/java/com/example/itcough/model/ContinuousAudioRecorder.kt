@@ -26,7 +26,12 @@ import androidx.core.app.NotificationCompat
 import com.example.itcough.MainActivity
 import com.example.itcough.NotificationActionReceiver
 import com.example.itcough.R
+import com.google.gson.Gson
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 
 class ContinuousAudioRecorder: Service() {
@@ -35,8 +40,8 @@ class ContinuousAudioRecorder: Service() {
         SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
     )
     private val FRAME_SIZE = 31200 //SAMPLE_RATE * 2 * 0.975
-    private val MARGIN_SIZE_FRAMES = 2
-    private val MAX_COUGH_BUFFER_SIZE_FRAMES = 10
+    private val MARGIN_SIZE_FRAMES = Global.coughSpacingLength
+    private val MAX_COUGH_BUFFER_SIZE_FRAMES = Global.maxCoughAudioLength
     private val MARGIN_SIZE = FRAME_SIZE * MARGIN_SIZE_FRAMES
     private val MAX_COUGH_BUFFER_SIZE = FRAME_SIZE * MAX_COUGH_BUFFER_SIZE_FRAMES
     private val COUGH_THRESHOLD = 0.2
@@ -49,6 +54,7 @@ class ContinuousAudioRecorder: Service() {
     private lateinit var yamnetModel: YamnetModel
 
     private var marginFrameAmount = 0
+    private var coughFrameAmount = 0
 
     val coughBuffer = ByteArrayOutputStream()
     val marginBuffer = ByteArray(MARGIN_SIZE)
@@ -88,9 +94,18 @@ class ContinuousAudioRecorder: Service() {
                         if (confidence != null && confidence > COUGH_THRESHOLD){
                             if (coughBuffer.size() == 0){
                                 coughBuffer.write(marginBuffer, 0, marginFrameAmount * FRAME_SIZE)
+                                coughFrameAmount += marginFrameAmount
+                                if (marginFrameAmount > 1) {
+                                    val data = coughBuffer.toByteArray()
+                                    // 清除指定範圍數據
+                                    data.fill(0, 0, (marginFrameAmount - 1) * FRAME_SIZE)
+                                    coughBuffer.reset() // 清空緩衝區
+                                    coughBuffer.write(data) // 僅保留最後一個框架
+                                }
                             }
                             marginFrameAmount = 0
                             coughBuffer.write(buffer, 0, FRAME_SIZE)
+                            coughFrameAmount ++
                             if (coughBuffer.size()>MAX_COUGH_BUFFER_SIZE) {
                                 saveCoughAudio()
                             }
@@ -98,10 +113,31 @@ class ContinuousAudioRecorder: Service() {
                         }else{
                             if (coughBuffer.size() > 0) {
                                 if (marginFrameAmount < MARGIN_SIZE_FRAMES) {
+                                    if (marginFrameAmount > 0) {
+                                        // 提取已寫入的數據
+                                        val data = coughBuffer.toByteArray()
+                                        val start = (coughFrameAmount - 1) * FRAME_SIZE
+                                        // 清除指定範圍數據
+                                        data.fill(0, start, start + FRAME_SIZE)
+                                        // 重置並重新寫入
+                                        coughBuffer.reset()
+                                        coughBuffer.write(data)
+                                    }
                                     coughBuffer.write(buffer, 0, FRAME_SIZE)
+                                    coughFrameAmount++
                                     System.arraycopy(buffer, 0, marginBuffer, marginFrameAmount * FRAME_SIZE, FRAME_SIZE)
                                     marginFrameAmount++
                                 }else{
+                                    if (marginFrameAmount > 1) {
+                                        // 提取已寫入的數據
+                                        val data = coughBuffer.toByteArray()
+                                        val start = (coughFrameAmount - 1) * FRAME_SIZE
+                                        // 清除指定範圍數據
+                                        data.fill(0, start, start + FRAME_SIZE)
+                                        // 重置並重新寫入
+                                        coughBuffer.reset()
+                                        coughBuffer.write(data)
+                                    }
                                     saveCoughAudio()
                                     System.arraycopy(marginBuffer, FRAME_SIZE, marginBuffer, 0, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE)
                                     System.arraycopy(buffer, 0, marginBuffer, (MARGIN_SIZE_FRAMES - 1) * FRAME_SIZE, FRAME_SIZE)
@@ -124,6 +160,7 @@ class ContinuousAudioRecorder: Service() {
     private fun saveCoughAudio() {
         val dataArray = coughBuffer.toByteArray()
         coughBuffer.reset()
+        coughFrameAmount = 0
         sendCreateCoughAudioRequest(dataArray)
     }
     fun stopRecording() {
@@ -152,7 +189,10 @@ class ContinuousAudioRecorder: Service() {
                     // 添加 JSON 數據部分
                     writer.write("--$boundary\r\n")
                     writer.write("Content-Disposition: form-data; name=\"metadata\"\r\n\r\n")
-                    writer.write("""{"userId": "${Global.userID}"}""")
+                    writer.write(Gson().toJson(mapOf(
+                        "userId" to Global.userID,
+                        "fileName" to getCurrentFormattedTime()
+                    )))
                     writer.write("\r\n")
 
                     // 添加文件部分
@@ -288,6 +328,10 @@ class ContinuousAudioRecorder: Service() {
         // 發送通知
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.notify(notificationId, notification)
+    }
+    fun getCurrentFormattedTime(): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
+        return dateFormat.format(Date())
     }
 
 }

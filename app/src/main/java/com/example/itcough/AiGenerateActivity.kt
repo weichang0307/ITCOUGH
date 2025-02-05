@@ -154,7 +154,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
 
     }
     private fun fetchAll(){
-        sendGetRecordsRequest("${Global.URL}/get_records/")
+        sendGetRecordsRequest("${Global.URL}/get_coughs/")
 
     }
     private fun refreshUI(){
@@ -358,9 +358,9 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
                 // 启用输出流，以便我们可以发送请求体数据
                 connection.doOutput = true
                 val jsonData = Gson().toJson(mapOf(
-                    "user_id" to Global.userID,
+                    "userId" to Global.userID,
                     "uuid" to temperUUID,
-                    "file_name" to fileName
+                    "fileName" to fileName
                 ))
                 // 发送 JSON 数据
                 connection.outputStream.use { outputStream ->
@@ -374,6 +374,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     Log.d("myTag", "Request was successful")
                     runOnUiThread{
+                        Toast.makeText(this@AiGenerateActivity, "Music Successfully Saved", Toast.LENGTH_SHORT).show()
                         refreshUI()
                     }
 

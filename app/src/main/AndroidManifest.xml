@@ -16,6 +16,7 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -28,6 +29,11 @@
         android:theme="@style/Theme.ITCOUGH"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".RecordSetting"
+            android:exported="false"
+            android:label="@string/title_activity_record_setting"
+            android:theme="@style/Theme.ITCOUGH" />
         <activity
             android:name=".SettingActivity"
             android:exported="false"
@@ -97,9 +103,10 @@
                 <action android:name="ACTION_STOP_RECORDING" />
             </intent-filter>
         </receiver>
+
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.ClientId"
-            android:value="416790674315-khk49fsrvusgguq2bic39ucg0oesh561.apps.googleusercontent.com"/>
+            android:value="416790674315-khk49fsrvusgguq2bic39ucg0oesh561.apps.googleusercontent.com" />
     </application>
 
 </manifest>

@@ -24,7 +24,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Advance Setting"
+                android:text="Record Setting"
                 android:textColor="@color/white"
                 android:fontFamily="@font/main_font"
                 android:textSize="30sp"
@@ -111,3 +111,4 @@
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

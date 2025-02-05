@@ -242,7 +242,7 @@ class CoughActivity : AppCompatActivity(), OnItemClickListener {
 
 
     private fun fetchAll(){
-        sendGetRecordsRequest("${Global.URL}/get_records/")
+        sendGetRecordsRequest("${Global.URL}/get_coughs/")
 
     }
 

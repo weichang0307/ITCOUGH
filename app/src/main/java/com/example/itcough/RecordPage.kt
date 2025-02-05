@@ -36,6 +36,7 @@ import kotlin.concurrent.thread
 import android.Manifest
 import android.media.MediaRecorder
 import android.os.Environment
+import androidx.core.view.isVisible
 import com.example.itcough.GalleryActivity
 import com.example.itcough.model.ContinuousAudioRecorder
 import java.io.File
@@ -73,11 +74,13 @@ class RecordPage : ComponentActivity() {
 
         btnLeft = findViewById(R.id.btnLeft)
         btnRight = findViewById(R.id.btnRight)
+        btnRight.isVisible = true
         btnLeft.setOnClickListener {
             finish()
         }
+        btnRight.setBackgroundResource(R.drawable.ic_settings_gray)
         btnRight.setOnClickListener {
-            startActivity(Intent(this, GalleryActivity::class.java))
+            startActivity(Intent(this, RecordSetting::class.java))
         }
 
         btnStop = findViewById(R.id.btnStop)
@@ -123,6 +126,7 @@ class RecordPage : ComponentActivity() {
         dismiss()
         Global.isRecording = false
         tvStatus.setText("Start")
+        btnRight.isVisible = true
 
 
     }
@@ -153,6 +157,7 @@ class RecordPage : ComponentActivity() {
         Log.d("myTag", "startRecording")
         val setStr = "Initializing"
         tvStatus.setText(setStr)
+        btnRight.isVisible = false
         val fadeInAnimator = ObjectAnimator.ofFloat(tvStatus, "alpha", 0f, 1f).apply {
             duration = 1500
             interpolator = AccelerateDecelerateInterpolator()

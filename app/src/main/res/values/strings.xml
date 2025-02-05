@@ -10,5 +10,6 @@
     <string name="title_activity_advance_setting">AdvanceSetting</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="default_web_client_id">259530183652-nqa7pgo9a4msre8q26jdlog9l0tq5p1b.apps.googleusercontent.com</string>
+    <string name="title_activity_record_setting">RecordSetting</string>
 
 </resources>
