@@ -1,39 +1,18 @@
 package com.example.itcough
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
-import androidx.cardview.widget.CardView
-import androidx.compose.ui.graphics.BlendMode.Companion.Color
-import androidx.compose.ui.graphics.Color
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.itcough.model.AudioRecord
-import com.example.itcough.view.AdapterChooseFile
-import com.google.android.material.textfield.TextInputEditText
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
+import com.example.itcough.`object`.Global
 
 class AdvanceSetting : ComponentActivity() {
 

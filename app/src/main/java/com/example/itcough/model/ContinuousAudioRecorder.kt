@@ -4,18 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
-import android.os.Handler
-import android.print.PrintAttributes.Margins
 import android.util.Log
-import com.example.itcough.Global
-import com.example.itcough.MyApplication
+import com.example.itcough.`object`.Global
 import com.example.itcough.YamnetModel
 import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.MappedByteBuffer
 import android.app.*
 import android.content.Intent
 import android.media.MediaRecorder
@@ -26,10 +21,10 @@ import androidx.core.app.NotificationCompat
 import com.example.itcough.MainActivity
 import com.example.itcough.NotificationActionReceiver
 import com.example.itcough.R
+import com.example.itcough.`object`.Connection
+import com.example.itcough.`object`.GoogleService
 import com.google.gson.Gson
-import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -59,7 +54,24 @@ class ContinuousAudioRecorder: Service() {
     val coughBuffer = ByteArrayOutputStream()
     val marginBuffer = ByteArray(MARGIN_SIZE)
 
+    override fun onDestroy() {
+        super.onDestroy()
+        stopRecording()
+    }
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+    override fun onCreate() {
+        super.onCreate()
+        yamnetModel = YamnetModel(this)
+        createServiceNotificationChannel()
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(1, createServiceNotification())
+        startRecording()
+        return START_STICKY
+    }
 
     @SuppressLint("MissingPermission")
     fun startRecording() {
@@ -88,10 +100,10 @@ class ContinuousAudioRecorder: Service() {
                             saveCoughAudio()
                         }
                     }else{
-                        val output = yamnetModel?.runInference(byteArrayToFloatArray(buffer))
-                        val confidence = output?.get(42)
+                        val output = yamnetModel.runInference(byteArrayToFloatArray(buffer))
+                        val confidence = output.get(42)
                         Log.d("myTag","分類ID: cough, 分數: $confidence")
-                        if (confidence != null && confidence > COUGH_THRESHOLD){
+                        if (confidence > COUGH_THRESHOLD){
                             if (coughBuffer.size() == 0){
                                 coughBuffer.write(marginBuffer, 0, marginFrameAmount * FRAME_SIZE)
                                 coughFrameAmount += marginFrameAmount
@@ -157,81 +169,21 @@ class ContinuousAudioRecorder: Service() {
 
         }
     }
-    private fun saveCoughAudio() {
-        val dataArray = coughBuffer.toByteArray()
-        coughBuffer.reset()
-        coughFrameAmount = 0
-        sendCreateCoughAudioRequest(dataArray)
-    }
-    fun stopRecording() {
-        Global.isRecording = false
-        audioRecord?.stop()
-        audioRecord?.release()
-        yamnetModel.close()
-
-    }
-
     private fun sendCreateCoughAudioRequest(dataArray: ByteArray) {
-        Thread {
-            try {
-                val url = URL("${Global.URL}/create_cough_audio/")
-                val boundary = "Boundary-" + System.currentTimeMillis()
-                val connection = url.openConnection() as HttpURLConnection
-                connection.apply {
-                    doOutput = true
-                    requestMethod = "POST"
-                    setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
-                }
-
-                connection.outputStream.use { outputStream ->
-                    val writer = outputStream.bufferedWriter()
-
-                    // 添加 JSON 數據部分
-                    writer.write("--$boundary\r\n")
-                    writer.write("Content-Disposition: form-data; name=\"metadata\"\r\n\r\n")
-                    writer.write(Gson().toJson(mapOf(
-                        "userId" to Global.userID,
-                        "fileName" to getCurrentFormattedTime()
-                    )))
-                    writer.write("\r\n")
-
-                    // 添加文件部分
-                    writer.write("--$boundary\r\n")
-                    writer.write("Content-Disposition: form-data; name=\"file\"; filename=\"audio.wav\"\r\n")
-                    writer.write("Content-Type: audio/wav\r\n\r\n")
-                    writer.flush()
-
-                    outputStream.write(dataArray)  // 寫入音檔數據
-                    outputStream.flush()
-
-                    writer.write("\r\n--$boundary--\r\n")
-                    writer.flush()
-                }
-
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.d("myTag", "Upload successful")
-                } else {
-                    Log.d("myTag", "Upload failed with response code: $responseCode")
-                }
-            } catch (e: Exception) {
-                Log.e("myTag", "Error uploading data", e)
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+            "fileName" to getCurrentFormattedTime()
+        ))
+        Connection.sendAudioWithJsonPostRequest(
+            Connection.SAVE_COUGH_AUDIO_PATH,
+            jsonData,
+            dataArray,
+            onRequestSuccess = {
+                sendNotification(this, "File Saved", "")
             }
-        }.start()
+        )
     }
-
-
-    private fun byteArrayToFloatArray(buffer: ByteArray): FloatArray {
-        val floatArray = FloatArray(buffer.size / 2) // 每兩個字節組成一個浮點數
-        for (i in floatArray.indices) {
-            val low = buffer[i * 2].toInt() and 0xFF
-            val high = buffer[i * 2 + 1].toInt() shl 8
-            val sample = high or low // 合成 16 位有符號整數
-            floatArray[i] = sample / 32768.0f // 轉換為範圍 [-1.0, 1.0]
-        }
-        return floatArray
-    }
-    private fun createNotification(): Notification {
+    private fun createServiceNotification(): Notification {
         // 引用自訂佈局
         val notificationLayout = RemoteViews(packageName, R.layout.notification_detecting)
 
@@ -258,7 +210,7 @@ class ContinuousAudioRecorder: Service() {
             .setDeleteIntent(stopPendingIntent)
             .build()
     }
-    private fun createNotificationChannel() {
+    private fun createServiceNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID, "Custom Recording Service", NotificationManager.IMPORTANCE_HIGH
@@ -268,30 +220,6 @@ class ContinuousAudioRecorder: Service() {
             manager.createNotificationChannel(channel)
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopRecording()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-    override fun onCreate() {
-        super.onCreate()
-        yamnetModel = YamnetModel(this)
-
-        createNotificationChannel()
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(1, createNotification())
-        startRecording()
-        return START_STICKY
-    }
-
-
-
     fun sendNotification(context: Context, title: String, message: String) {
         val CHANNEL_ID = "my_notification_channel"
         val notificationId = 2
@@ -329,9 +257,32 @@ class ContinuousAudioRecorder: Service() {
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.notify(notificationId, notification)
     }
-    fun getCurrentFormattedTime(): String {
+    private fun getCurrentFormattedTime(): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
         return dateFormat.format(Date())
     }
+    private fun saveCoughAudio() {
+        val dataArray = coughBuffer.toByteArray()
+        coughBuffer.reset()
+        coughFrameAmount = 0
+        sendCreateCoughAudioRequest(dataArray)
+    }
+    private fun stopRecording() {
+        Global.isRecording = false
+        audioRecord?.stop()
+        audioRecord?.release()
+        yamnetModel.close()
+    }
 
+
+    private fun byteArrayToFloatArray(buffer: ByteArray): FloatArray {
+        val floatArray = FloatArray(buffer.size / 2) // 每兩個字節組成一個浮點數
+        for (i in floatArray.indices) {
+            val low = buffer[i * 2].toInt() and 0xFF
+            val high = buffer[i * 2 + 1].toInt() shl 8
+            val sample = high or low // 合成 16 位有符號整數
+            floatArray[i] = sample / 32768.0f // 轉換為範圍 [-1.0, 1.0]
+        }
+        return floatArray
+    }
 }

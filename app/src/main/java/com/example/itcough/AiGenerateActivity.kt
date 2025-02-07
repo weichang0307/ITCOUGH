@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -14,24 +13,20 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.itcough.model.AudioRecord
+import com.example.itcough.`object`.Connection
+import com.example.itcough.`object`.Global
+import com.example.itcough.`object`.GoogleService
 import com.example.itcough.view.AdapterChooseFile
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import org.json.JSONObject
 import java.io.BufferedReader
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.UUID
 
 class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
@@ -42,8 +37,8 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
     private lateinit var btnGenerate: Button
     private lateinit var btnSave: Button
     private lateinit var btnAdvanceSetting: Button
-    private lateinit var adapter: AdapterChooseFile
-    private lateinit var dialog: AlertDialog
+    private lateinit var adapterChooseCoughFile: AdapterChooseFile
+    private lateinit var dialogChooseCoughFile: AlertDialog
     private lateinit var searchInput: TextInputEditText
     private var coughRecord: AudioRecord? = null
 
@@ -64,38 +59,18 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         btnSave = findViewById(R.id.btnSave)
         btnAdvanceSetting = findViewById(R.id.btnAdvanceSetting)
 
-        btnSave.isVisible = false
+        switchToSettingMode()
 
         btnLeft.setOnClickListener {
-            if (isGenerate){
-                showDiscardFileDialog(this){
-                    finish()
-                }
-            }else if (isGenerating){
-                showCancelGenerationDialog(this){
-                    finish()
-                }
-            }else{
-                finish()
-            }
+            actionConfirm(){finish()}
         }
         btnRight.setBackgroundResource(R.drawable.ic_renew)
         btnRight.setOnClickListener {
-            if (isGenerate){
-                showDiscardFileDialog(this){
-                    refreshUI()
-                }
-            }else if (isGenerating){
-                showCancelGenerationDialog(this){
-                    refreshUI()
-                }
-            }else{
-                refreshUI()
-            }
+            actionConfirm(){refreshUI()}
         }
         btnChooseCough.setOnClickListener(){
-            dialog.show()
-            fetchAll()
+            showChooseCoughDialog()
+            sendGetCoughAudioListRequest()
         }
         btnAdvanceSetting.setOnClickListener(){
             val intent = Intent(this, AdvanceSetting::class.java)
@@ -118,278 +93,158 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
 
 
 
-        val builder = AlertDialog.Builder(this)
-        val inflater = LayoutInflater.from(this)
-        val dialogView = inflater.inflate(R.layout.dialog_choose_file, null)
-        val recyclerview = dialogView.findViewById<RecyclerView>(R.id.recyclerview)
-        searchInput = dialogView.findViewById<TextInputEditText>(R.id.search_input)
-        recyclerview.layoutManager = LinearLayoutManager(this)
-        adapter = AdapterChooseFile(this)
-        recyclerview.adapter = adapter
-        dialog = builder.setView(dialogView)
-            .setNegativeButton("Cancel", null)
-            .create()
 
-        dialog.window?.apply {
-            setBackgroundDrawableResource(android.R.color.transparent) // 设置背景透明
-            setDimAmount(0.8f) // 设置背景遮罩透明度
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sendCleanTemperRequest()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            actionConfirm(){finish()}
+            return true;
         }
-        searchInput.addTextChangedListener(object: TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                var query = p0.toString()
-                searchDatabase(query)
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-
-            }
-
-        })
-
-
-
+        return super.onKeyDown(keyCode, event)
     }
-    private fun fetchAll(){
-        sendGetRecordsRequest("${Global.URL}/get_coughs/")
-
-    }
-    private fun refreshUI(){
-        if (isGenerate) sendSaveMusicRequest("")
-        btnGenerate.isClickable = true
-        btnGenerate.text = "Generate"
-        btnChooseCough.isEnabled = true
-        btnSave.isVisible = false
-        temperUUID = null
-        btnChooseCough.setText("")
-        isGenerate = false
-        isGenerating = false
-
-
-    }
-    @SuppressLint("NotifyDataSetChanged")
-    private fun sendGetRecordsRequest(urlString: String) {
-        Thread {
-            val url = URL(urlString)
-            var connection: HttpURLConnection? = null
-            try {
-                connection = url.openConnection() as HttpURLConnection
-                connection.apply {
-                    requestMethod = "POST"
-                    connectTimeout = 5000
-                    readTimeout = 5000
-                    doInput = true
-                    doOutput = true // 允許輸出
-                    setRequestProperty("Content-Type", "application/json")
-                }
-                // 創建要傳輸的 JSON 數據
-                val jsonPayload = """{"userId": "${Global.userID}"}"""
-                val outputStream = connection.outputStream
-                outputStream.write(jsonPayload.toByteArray())
-                outputStream.flush()
-                outputStream.close()
-                // 读取响应
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
-                    Log.d("myTest", "Request was successful")
-                    Log.d("myTest", parseAudioRecords(response)[0].filePath)
-
-                    runOnUiThread {
-                        adapter.allrecords.clear()
-                        adapter.allrecords.addAll(parseAudioRecords(response))
-                        searchInput.setText("")
-                        searchDatabase("")
-                        Log.d("myTag", adapter.records.toString())
-                        adapter.notifyDataSetChanged()
-                    }
-
-                } else {
-                    Log.d("myTag", "Request failed with response code: $responseCode")
-                }
-            } catch (e: Exception) {
-                Log.e("myTag", "Error sending GET request", e)
-            } finally {
-                connection?.disconnect()
-            }
-        }.start()
-    }
-    private fun parseAudioRecords(jsonString: String): List<AudioRecord> {
-        val gson = Gson()
-        val listType = object : TypeToken<List<AudioRecord>>() {}.type
-        return gson.fromJson(jsonString, listType)
-    }
-
     override fun onItemClickListener(position: Int) {
         runOnUiThread{
-            coughRecord = adapter.records[position]
+            coughRecord = adapterChooseCoughFile.records[position]
             btnChooseCough.setText(coughRecord?.filename.toString())
-            adapter.records.clear()
-            dialog.dismiss()
+            adapterChooseCoughFile.records.clear()
+            dialogChooseCoughFile.dismiss()
         }
-
     }
     override fun onItemLongClickListener(position: Int) {
-        val record = adapter.records[position]
-        Log.d("myTag","das")
+        val record = adapterChooseCoughFile.records[position]
         val intent = Intent(this, AudioPlayerActivity::class.java)
         intent.putExtra("FILE_PATH", record.filePath)
         intent.putExtra("FILE_NAME", record.filename)
         startActivity(intent)
     }
-    private fun searchDatabase(query: String) {
-        adapter.records.clear()
-        var queryResult = adapter.allrecords.filter { it.filename.contains(query) }
-        adapter.records.addAll(queryResult)
-        runOnUiThread{
-            adapter.notifyDataSetChanged()
-        }
-    }
+
     private fun getGenerateData(): Map<String, String>? {
-        if(btnChooseCough.text.length == 0) {
+        if(btnChooseCough.text.isEmpty()) {
             Toast.makeText(this@AiGenerateActivity, "Select a cough audio", Toast.LENGTH_LONG).show()
             return null
         }
-
         temperUUID = UUID.randomUUID().toString()
+        switchToGeneratingMode()
         return mapOf(
             "cough_path" to coughRecord?.filePath.toString(),
-            "user_id" to Global.userID.toString(),
+            "user_id" to GoogleService.userID.toString(),
             "alto" to Global.alto,
             "bass" to Global.bass,
             "high" to Global.high,
             "uuid" to temperUUID.toString()
         )
     }
+    @SuppressLint("NotifyDataSetChanged")
+    private fun sendGetCoughAudioListRequest() {
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID
+        ))
+        Connection.sendJsonPostRequest(
+            Connection.GET_COUGH_AUDIO_LIST_PATH,
+            jsonData,
+            onRequestSuccess = { connection ->
+                val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
+                runOnUiThread {
+                    adapterChooseCoughFile.allrecords.clear()
+                    adapterChooseCoughFile.allrecords.addAll(Connection.parseAudioRecords(response))
+                    searchInput.setText("")
+                    searchDatabase("")
+                    adapterChooseCoughFile.notifyDataSetChanged()
+                }
+
+            }
+        )
+    }
     private fun sendGeneratePostRequest() {
         val generateData = getGenerateData() ?: return
-        btnGenerate.isClickable = false
-        btnGenerate.text = "Generating..."
-        btnChooseCough.isEnabled = false
-        val urlString = "${Global.URL}/generate/"
-        Thread {
-            // 创建 URL 对象
-            val url = URL(urlString)
-
-            // 打开连接
-            val connection = url.openConnection() as HttpURLConnection
-
-            try {
-                // 设置请求方法为 POST
-                connection.requestMethod = "POST"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 500000
-
-                // 设置请求头，表明我们发送的是 JSON 数据
-                connection.setRequestProperty("Content-Type", "application/json")
-
-                // 启用输出流，以便我们可以发送请求体数据
-                connection.doOutput = true
-                val jsonData = Gson().toJson(generateData)
-                // 发送 JSON 数据
-                connection.outputStream.use { outputStream ->
-                    // 将 JSON 数据转换为字节并写入输出流
-                    outputStream.write(jsonData.toByteArray())
-                    outputStream.flush()
+        val jsonData = Gson().toJson(generateData)
+        Connection.sendJsonPostRequest(
+            Connection.GENERATE_MUSIC_PATH,
+            jsonData,
+            onRequestSuccess = { connection ->
+                val responseJson = connection.inputStream.bufferedReader().use { it.readText() }
+                generatePath = Connection.jsonToMap(responseJson)["generate_path"]
+                runOnUiThread{
+                    switchToBrowsingMode()
                 }
-                isGenerating = true
-
-                // 获取响应代码
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.d("myTag", "Request was successful")
-                    val responseJson = connection.inputStream.bufferedReader().use { it.readText() }
-                    generatePath = jsonToMap(responseJson)["generate_path"]
-                    runOnUiThread{
-                        btnGenerate.isClickable = true
-                        btnGenerate.text = "Play"
-                        btnSave.isVisible = true
-                        isGenerate = true
-                        isGenerating = false
-                    }
-
-
-                } else {
-                    isGenerating = false
-                    Log.d("myTag", "Request failed with response code: $responseCode")
+            },
+            onRequestFail = {
+                runOnUiThread{
+                    switchToSettingMode()
                 }
-            } catch (e: IOException) {
-                Log.e("myTag", "Error sending request", e)
-            } finally {
-                connection.disconnect() // 关闭连接
+            },
+            onConnectionFail = {
+                runOnUiThread {
+                    switchToSettingMode()
+                }
             }
-        }.start()
+
+        )
     }
-
-    fun jsonToMap(jsonString: String): Map<String, String> {
-        val jsonObject = JSONObject(jsonString)
-        val map = mutableMapOf<String, String>()
-        val iterator = jsonObject.keys()
-
-        while (iterator.hasNext()) {
-            val key = iterator.next()
-            map[key] = jsonObject.get(key).toString()
-        }
-        return map
-    }
-
-    fun sendSaveMusicRequest(fileName: String){
+    private fun sendSaveMusicRequest(fileName: String){
+        if (!isGenerate) return
         if (temperUUID == null) return
-        val urlString = "${Global.URL}/save_music/"
-        Thread {
-            // 创建 URL 对象
-            val url = URL(urlString)
-
-            // 打开连接
-            val connection = url.openConnection() as HttpURLConnection
-
-            try {
-                // 设置请求方法为 POST
-                connection.requestMethod = "POST"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 500000
-
-                // 设置请求头，表明我们发送的是 JSON 数据
-                connection.setRequestProperty("Content-Type", "application/json")
-
-                // 启用输出流，以便我们可以发送请求体数据
-                connection.doOutput = true
-                val jsonData = Gson().toJson(mapOf(
-                    "userId" to Global.userID,
-                    "uuid" to temperUUID,
-                    "fileName" to fileName
-                ))
-                // 发送 JSON 数据
-                connection.outputStream.use { outputStream ->
-                    // 将 JSON 数据转换为字节并写入输出流
-                    outputStream.write(jsonData.toByteArray())
-                    outputStream.flush()
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+            "uuid" to temperUUID,
+            "fileName" to fileName
+        ))
+        Connection.sendJsonPostRequest(
+            Connection.SAVE_GENERATED_MUSIC_PATH,
+            jsonData,
+            onRequestSuccess = {
+                runOnUiThread{
+                    Toast.makeText(this@AiGenerateActivity, "Music Successfully Saved", Toast.LENGTH_SHORT).show()
+                    refreshUI()
                 }
-
-                // 获取响应代码
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.d("myTag", "Request was successful")
-                    runOnUiThread{
-                        Toast.makeText(this@AiGenerateActivity, "Music Successfully Saved", Toast.LENGTH_SHORT).show()
-                        refreshUI()
-                    }
-
-
-                } else {
-                    Log.d("myTag", "Request failed with response code: $responseCode")
-                }
-            } catch (e: IOException) {
-                Log.e("myTag", "Error sending request", e)
-            } finally {
-                connection.disconnect() // 关闭连接
             }
-        }.start()
+        )
     }
-    fun showSaveFileDialog(context: Context) {
+    private fun sendCleanTemperRequest(){
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+        ))
+        Connection.sendJsonPostRequest(
+            Connection.CLEAN_TEMPER_PATH,
+            jsonData
+        )
+    }
+    private fun showChooseCoughDialog() {
+        val builder = AlertDialog.Builder(this)
+        val inflater = LayoutInflater.from(this)
+        val dialogView = inflater.inflate(R.layout.dialog_choose_file, null)
+        val recyclerview = dialogView.findViewById<RecyclerView>(R.id.recyclerview)
+        searchInput = dialogView.findViewById<TextInputEditText>(R.id.search_input)
+        searchInput.addTextChangedListener(object: TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                val query = p0.toString()
+                searchDatabase(query)
+            }
+            override fun afterTextChanged(p0: Editable?) {}
+        })
+        recyclerview.layoutManager = LinearLayoutManager(this)
+        adapterChooseCoughFile = AdapterChooseFile(this)
+        recyclerview.adapter = adapterChooseCoughFile
+        dialogChooseCoughFile = builder.setView(dialogView)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialogChooseCoughFile.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent) // 设置背景透明
+            setDimAmount(0.8f) // 设置背景遮罩透明度
+        }
+        dialogChooseCoughFile.show()
+    }
+
+    private fun showSaveFileDialog(context: Context) {
         val builder = AlertDialog.Builder(context)
         builder.setMessage("Save Generated Music")
         // 創建 EditText 讓使用者輸入
@@ -400,9 +255,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         layout.orientation = LinearLayout.VERTICAL
         layout.setPadding(50, 20, 50, 20)
         layout.addView(input)
-
         builder.setView(layout)
-
         // 設置按鈕
         builder.setPositiveButton("save") { _, _ ->
             val fileName = input.text.toString().trim()
@@ -412,14 +265,13 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
                 Toast.makeText(context, "file name can not be empty", Toast.LENGTH_SHORT).show()
             }
         }
-
         builder.setNegativeButton("cancel") { dialog, _ ->
             dialog.dismiss()
         }
 
         builder.show()
     }
-    fun showDiscardFileDialog(context: Context, onDiscard: () -> Unit) {
+    private fun showDiscardFileDialog(context: Context, onDiscard: () -> Unit) {
         AlertDialog.Builder(context)
             .setMessage("There is an unsaved file")
             .setNegativeButton("Discard") { _, _ ->
@@ -434,7 +286,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
             }
             .show()
     }
-    fun showCancelGenerationDialog(context: Context, onDiscard: () -> Unit) {
+    private fun showCancelGenerationDialog(context: Context, onDiscard: () -> Unit) {
         AlertDialog.Builder(context)
             .setMessage("You want to discard the generating process?")
             .setNegativeButton("Discard") { _, _ ->
@@ -446,28 +298,61 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
             .show()
     }
 
-    override fun onDestroy() {
-        sendSaveMusicRequest("")
-        super.onDestroy()
-    }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            if (isGenerate){
-                showDiscardFileDialog(this){
-                    finish()
-                }
-            }else if (isGenerating){
-                showCancelGenerationDialog(this){
-                    finish()
-                }
-            }else{
-                finish()
-            }
 
-            return true;
+    @SuppressLint("NotifyDataSetChanged")
+    private fun searchDatabase(query: String) {
+        adapterChooseCoughFile.records.clear()
+        val queryResult = adapterChooseCoughFile.allrecords.filter { it.filename.contains(query) }
+        adapterChooseCoughFile.records.addAll(queryResult)
+        runOnUiThread{
+            adapterChooseCoughFile.notifyDataSetChanged()
         }
-
-        return super.onKeyDown(keyCode, event)
+    }
+    private fun refreshUI(){
+        if (isGenerate) sendCleanTemperRequest()
+        temperUUID = null
+        btnChooseCough.setText("")
+        switchToSettingMode()
+    }
+    private fun actionConfirm(action: () -> Unit) {
+        if (isGenerate){
+            showDiscardFileDialog(this){
+                action()
+            }
+        }else if (isGenerating){
+            showCancelGenerationDialog(this){
+                action()
+            }
+        }else{
+            action()
+        }
+    }
+    private fun switchToSettingMode() {
+        btnAdvanceSetting.isVisible = true
+        btnGenerate.isClickable = true
+        btnGenerate.text = getString(R.string.generate)
+        btnSave.isVisible = false
+        btnChooseCough.isEnabled = true
+        isGenerate = false
+        isGenerating = false
+    }
+    private fun switchToGeneratingMode() {
+        btnAdvanceSetting.isVisible = false
+        btnGenerate.isClickable = false
+        btnGenerate.text = getString(R.string.generating)
+        btnSave.isVisible = false
+        btnChooseCough.isEnabled = false
+        isGenerate = false
+        isGenerating = true
+    }
+    private fun switchToBrowsingMode() {
+        btnAdvanceSetting.isVisible = false
+        btnGenerate.isClickable = true
+        btnGenerate.text = getString(R.string.play)
+        btnSave.isVisible = true
+        btnChooseCough.isEnabled = false
+        isGenerate = true
+        isGenerating = false
     }
 }

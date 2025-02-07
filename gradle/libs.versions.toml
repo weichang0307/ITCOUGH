@@ -1,21 +1,25 @@
 [versions]
 agp = "8.7.3"
+glide = "4.15.1"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.9.3"
-composeBom = "2024.12.01"
+activityCompose = "1.10.0"
+composeBom = "2025.01.01"
 cardview = "1.0.0"
 constraintlayout = "2.2.0"
 coordinatorlayout = "1.2.0"
 material = "1.12.0"
+playServicesAuth = "21.3.0"
 roomKtx = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.10.1" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -35,9 +39,12 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+#noinspection SimilarGradleDependency
+play-services-auth-v2130 = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.12.0" }
 tensorflow-lite-task-audio = { group = "org.tensorflow", name = "tensorflow-lite-task-audio", version = "0.4.2" }
-googlesignin = { group = "com.google.android.gms", name = "play-services-auth", version = "20.7.0" }
+#noinspection SimilarGradleDependency
+googlesignin = { group = "com.google.android.gms", name = "play-services-auth", version = "21.3.0" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

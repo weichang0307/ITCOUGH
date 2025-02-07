@@ -9,11 +9,12 @@ import com.google.android.gms.common.api.ApiException
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.example.itcough.`object`.Global
+import com.example.itcough.`object`.GoogleService
 import com.google.android.gms.tasks.Task
 import java.net.HttpURLConnection
 import java.net.URL
@@ -46,7 +47,7 @@ class SettingActivity : AppCompatActivity() {
         updateUserInfo(account)
 
         btnAccount.setOnClickListener{
-            if (Global.userID != null) signOut()
+            if (GoogleService.userID != null) signOut()
             signIn()
         }
 
@@ -86,18 +87,18 @@ class SettingActivity : AppCompatActivity() {
     }
     @SuppressLint("SetTextI18n")
     private fun updateUserInfo(account: GoogleSignInAccount?) {
-        Global.userEmail = account?.email
-        Global.userID = account?.id
-        Global.userPhotoUrl = account?.photoUrl
-        Global.userName = account?.displayName
+        GoogleService.userEmail = account?.email
+        GoogleService.userID = account?.id
+        GoogleService.userPhotoUrl = account?.photoUrl
+        GoogleService.userName = account?.displayName
         Glide.with(this)
-            .load(Global.userPhotoUrl)
+            .load(GoogleService.userPhotoUrl)
             .placeholder(R.drawable.ic_person) // 預設圖片
             .circleCrop()
             .into(btnAccount)
-        if (Global.userID != null) sendCreateUserRequest()
-        tvName.text = "name: " + Global.userName
-        tvEmail.text = "email: " + Global.userEmail
+        if (GoogleService.userID != null) sendCreateUserRequest()
+        tvName.text = "name: " + GoogleService.userName
+        tvEmail.text = "email: " + GoogleService.userEmail
         Log.d("GoogleSignIn", "已登入的用戶: ${account?.email}")
     }
     private fun sendCreateUserRequest() {
@@ -117,7 +118,7 @@ class SettingActivity : AppCompatActivity() {
                 }
 
                 // 創建要傳輸的 JSON 數據
-                val jsonPayload = """{"userId": "${Global.userID}"}"""
+                val jsonPayload = """{"userId": "${GoogleService.userID}"}"""
                 val outputStream = connection.outputStream
                 outputStream.write(jsonPayload.toByteArray())
                 outputStream.flush()

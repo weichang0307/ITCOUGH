@@ -1,53 +1,30 @@
 package com.example.itcough
 
 import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
-import android.os.VibrationEffect
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.BounceInterpolator
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
-import com.example.itcough.ui.theme.ITCOUGHTheme
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
-import kotlin.concurrent.thread
 import android.Manifest
 import android.media.MediaRecorder
-import android.os.Environment
 import androidx.core.view.isVisible
-import com.example.itcough.GalleryActivity
 import com.example.itcough.model.ContinuousAudioRecorder
-import java.io.File
-import java.io.FileInputStream
-import java.io.OutputStream
-import java.net.HttpURLConnection
-import java.net.URL
+import com.example.itcough.`object`.Global
 
 class RecordPage : ComponentActivity() {
-    private var recordingThread: Thread? = null
-    private var mediaRecorder: MediaRecorder? = null
 
     private lateinit var btnLeft: ImageButton
     private lateinit var btnRight: ImageButton
@@ -74,7 +51,7 @@ class RecordPage : ComponentActivity() {
 
         btnLeft = findViewById(R.id.btnLeft)
         btnRight = findViewById(R.id.btnRight)
-        btnRight.isVisible = true
+        btnRight.isVisible = !Global.isRecording
         btnLeft.setOnClickListener {
             finish()
         }

@@ -1,17 +1,9 @@
 package com.example.itcough
 
-import android.app.DownloadManager
-import android.content.BroadcastReceiver
-import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-
-import android.net.Uri
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -25,23 +17,19 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.itcough.OnItemClickListener
 import com.example.itcough.model.AudioRecord
-import com.example.itcough.R
+import com.example.itcough.`object`.Connection
+import com.example.itcough.`object`.Global
+import com.example.itcough.`object`.GoogleService
 import com.example.itcough.view.Adapter
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.BufferedReader
-import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -445,6 +433,7 @@ class CoughActivity : AppCompatActivity(), OnItemClickListener {
         }.start()
     }
     private fun sendGetRecordsRequest(urlString: String) {
+
         Thread {
             val url = URL(urlString)
             var connection: HttpURLConnection? = null
@@ -460,7 +449,7 @@ class CoughActivity : AppCompatActivity(), OnItemClickListener {
                 }
 
                 // 創建要傳輸的 JSON 數據
-                val jsonPayload = """{"userId": "${Global.userID}"}"""
+                val jsonPayload = """{"userId": "${GoogleService.userID}"}"""
                 val outputStream = connection.outputStream
                 outputStream.write(jsonPayload.toByteArray())
                 outputStream.flush()
