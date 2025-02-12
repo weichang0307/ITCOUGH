@@ -10,11 +10,13 @@ import java.net.URL
 
 object Connection {
     const val SAVE_COUGH_AUDIO_PATH = "create_cough_audio/"
-    const val UPDATE_USER_INFO_PATH = "create_user"
     const val GET_COUGH_AUDIO_LIST_PATH = "get_coughs/"
     const val GENERATE_MUSIC_PATH = "generate/"
     const val SAVE_GENERATED_MUSIC_PATH = "save_music/"
     const val CLEAN_TEMPER_PATH = "clean_temper/"
+    const val SET_USER_INFO_PATH = "set_user_info/"
+    const val SIGN_UP_PATH = "sign_up/"
+    const val GET_USER_INFO_PATH = "get_user_info/"
     fun sendJsonPostRequest(
         path: String,
         jsonData: String,
@@ -127,6 +129,11 @@ object Connection {
             map[key] = jsonObject.get(key).toString()
         }
         return map
+    }
+    fun getJsonObject(connection: HttpURLConnection): JSONObject {
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val jsonObject = JSONObject(response)
+        return jsonObject
     }
     fun parseAudioRecords(jsonString: String): List<AudioRecord> {
         val gson = Gson()

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "259530183652",
+    "project_id": "itcough-1b78a",
+    "storage_bucket": "itcough-1b78a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259530183652:android:3e1d6431c0b79521d1edf1",
+        "android_client_info": {
+          "package_name": "com.example.itcough"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "259530183652-dkrea65prre541vlhdbv91dfmkinkeb6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.itcough",
+            "certificate_hash": "989d276821de0f3ea8db299ab2053af2caee85e3"
+          }
+        },
+        {
+          "client_id": "259530183652-nqa7pgo9a4msre8q26jdlog9l0tq5p1b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDl_WxXXWmp8cJrSKzj_ExjuONMUfpwRo4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "259530183652-nqa7pgo9a4msre8q26jdlog9l0tq5p1b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -102,6 +102,7 @@ class SettingActivity : AppCompatActivity() {
         Log.d("GoogleSignIn", "已登入的用戶: ${account?.email}")
     }
     private fun sendCreateUserRequest() {
+
         Thread {
             val urlString = "${Global.URL}/create_user"
             val url = URL(urlString)

@@ -12,6 +12,7 @@ import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.example.itcough.`object`.Account
 import com.example.itcough.`object`.GoogleService
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 
@@ -22,8 +23,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var cardCreate: CardView
     private lateinit var cardStart: ImageButton
     private lateinit var btnAccount: ImageButton
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var signInLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,45 +34,38 @@ class MainActivity : ComponentActivity() {
         btnAccount = findViewById(R.id.btnAccount)
 
 
-        googleSignInClient = GoogleService.getGoogleSignInClient(this)
-        GoogleService.updateUserInfo(this)
-        updateUserUI()
 
-        signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            GoogleService.onSignInResult(this, result)
-            updateUserUI()
-        }
 
         cardFile.setOnClickListener{
-            if (GoogleService.isSignIn(this)){
+            if (Account.isSignIn(this)){
                 startActivity(Intent(this, File_Activity::class.java))
             }else{
-                GoogleService.signIn(this, signInLauncher, googleSignInClient)
+                startActivity(Intent(this, SetUpActivity::class.java))
             }
         }
         cardStart.setOnClickListener{
-            if (GoogleService.isSignIn(this)){
+            if (Account.isSignIn(this)){
                 startActivity(Intent(this, RecordPage::class.java))
             }else{
-                GoogleService.signIn(this, signInLauncher, googleSignInClient)
+                startActivity(Intent(this, SetUpActivity::class.java))
             }
         }
         cardCreate.setOnClickListener{
-            if (GoogleService.isSignIn(this)){
+            if (Account.isSignIn(this)){
                 startActivity(Intent(this, CreateActivity::class.java))
             }else{
-                GoogleService.signIn(this, signInLauncher, googleSignInClient)
+                startActivity(Intent(this, SetUpActivity::class.java))
             }
         }
         cardSetting.setOnClickListener{
-            if (GoogleService.isSignIn(this)){
+            if (Account.isSignIn(this)){
                 startActivity(Intent(this, SettingActivity::class.java))
             }else{
-                GoogleService.signIn(this, signInLauncher, googleSignInClient)
+                startActivity(Intent(this, SetUpActivity::class.java))
             }
         }
         btnAccount.setOnClickListener{
-            GoogleService.signIn(this, signInLauncher, googleSignInClient, true)
+            startActivity(Intent(this, SetUpActivity::class.java))
         }
         if (ContextCompat.checkSelfPermission(
                 this,

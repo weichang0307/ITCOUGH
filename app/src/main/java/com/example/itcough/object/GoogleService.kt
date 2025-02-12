@@ -43,7 +43,6 @@ object GoogleService {
         userID = account?.id
         userPhotoUrl = account?.photoUrl
         userName = account?.displayName
-        sendUpdateUserInfoRequest()
     }
     fun signIn(
         activity: Activity,
@@ -83,21 +82,10 @@ object GoogleService {
         }
     }
     @JvmStatic
-    fun signOut(activity: Activity, googleSignInClient: GoogleSignInClient, onSignOutComplete: () -> Unit) {
+    fun signOut(activity: Activity, googleSignInClient: GoogleSignInClient, onSignOutComplete: () -> Unit = {}) {
         googleSignInClient.signOut().addOnCompleteListener(activity) {
             updateUserInfo(activity)
             onSignOutComplete()
         }
-    }
-    private fun sendUpdateUserInfoRequest() {
-        val jsonData = Gson().toJson(mapOf(
-            "userId" to userID,
-            "userEmail" to userEmail,
-            "userName" to userName
-        ))
-        Connection.sendJsonPostRequest(
-            Connection.UPDATE_USER_INFO_PATH,
-            jsonData,
-        )
     }
 }

@@ -20,4 +20,6 @@ object Global {
     var maxCoughAudioLength: Int = 10
     var coughSpacingLength: Int = 2
 
+
+
 }

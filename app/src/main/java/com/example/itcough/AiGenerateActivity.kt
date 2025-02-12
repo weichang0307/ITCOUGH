@@ -106,7 +106,6 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
             actionConfirm(){finish()}
             return true;
         }
-
         return super.onKeyDown(keyCode, event)
     }
     override fun onItemClickListener(position: Int) {
