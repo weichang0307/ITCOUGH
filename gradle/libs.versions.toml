@@ -39,12 +39,12 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
-#noinspection SimilarGradleDependency
 play-services-auth-v2130 = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.12.0" }
 tensorflow-lite-task-audio = { group = "org.tensorflow", name = "tensorflow-lite-task-audio", version = "0.4.2" }
-#noinspection SimilarGradleDependency
 googlesignin = { group = "com.google.android.gms", name = "play-services-auth", version = "21.3.0" }
+
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

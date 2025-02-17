@@ -1,24 +1,14 @@
 package com.example.itcough.view
 
-import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.itcough.AudioPlayerActivity
 import com.example.itcough.OnItemClickListener
 import com.example.itcough.model.AudioRecord
 import com.example.itcough.R
-import com.google.android.material.textfield.TextInputEditText
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.collections.ArrayList
 
 class AdapterChooseFile(var listener: OnItemClickListener) : RecyclerView.Adapter<AdapterChooseFile.ViewHolder>() {
@@ -46,7 +36,6 @@ class AdapterChooseFile(var listener: OnItemClickListener) : RecyclerView.Adapte
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
                 listener.onItemLongClickListener(position)
-
             }
             return true
         }
@@ -70,6 +59,10 @@ class AdapterChooseFile(var listener: OnItemClickListener) : RecyclerView.Adapte
             holder.tvFilename.text = record.filename
 
         }
+    }
+
+    fun updateListener(listenerNew: OnItemClickListener) {
+        listener = listenerNew
     }
 
 }

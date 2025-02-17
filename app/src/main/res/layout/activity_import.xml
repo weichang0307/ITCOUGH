@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background">
+    <LinearLayout
+        android:id="@+id/processingMask"
+        android:elevation="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:visibility="invisible"
+        android:background="@color/black_transparent99" >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="40dp"
+            android:text="Processing..."
+            android:textColor="@color/white"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <include
+            android:id="@+id/topBarLayout"
+            layout="@layout/topbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top" />
+        <TextView
+            android:layout_margin="30dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="40sp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:fontFamily="@font/main_font"
+            android:textColor="@color/white"
+            android:text="Upload Audio"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <Button
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginHorizontal="30dp"
+                android:layout_marginVertical="20dp"
+                android:paddingHorizontal="30dp"
+                android:id="@+id/btnChooseFile"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/circle_button_background"
+                android:backgroundTint="@color/green"
+                android:text="Choose file"/>
+            <LinearLayout
+                app:layout_constraintTop_toBottomOf="@id/btnChooseFile"
+                app:layout_constraintBottom_toTopOf="@id/bottomSheet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:id="@+id/tvFilePath"
+                    android:layout_marginHorizontal="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:text="CHOOSE AN AUDIO FILE"/>
+                <Button
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvFilePath"
+                    android:layout_margin="20dp"
+                    android:paddingHorizontal="20dp"
+                    android:visibility="invisible"
+                    android:id="@+id/btnPlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/circle_button_background"
+                    android:backgroundTint="@color/purple_500"
+                    android:textColor="@color/white"
+                    android:text="Play"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/bottomSheet"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_marginVertical="20dp"
+                >
+                <Button
+                    android:visibility="invisible"
+                    android:layout_marginHorizontal="10dp"
+                    android:paddingHorizontal="20dp"
+                    android:id="@+id/btnUploadCough"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/circle_button_background"
+                    android:backgroundTint="@color/blue"
+                    android:textColor="@color/white"
+                    android:text="Upload Cough"/>
+                <Button
+                    android:layout_marginHorizontal="10dp"
+                    android:visibility="invisible"
+                    android:paddingHorizontal="20dp"
+                    android:id="@+id/btnUploadMusic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/circle_button_background"
+                    android:backgroundTint="@color/blue"
+                    android:textColor="@color/white"
+                    android:text="Upload Music"/>
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

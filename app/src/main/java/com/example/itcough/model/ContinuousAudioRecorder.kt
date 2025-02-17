@@ -101,7 +101,7 @@ class ContinuousAudioRecorder: Service() {
                         }
                     }else{
                         val output = yamnetModel.runInference(byteArrayToFloatArray(buffer))
-                        val confidence = output.get(42)
+                        val confidence = output[42]
                         Log.d("myTag","分類ID: cough, 分數: $confidence")
                         if (confidence > COUGH_THRESHOLD){
                             if (coughBuffer.size() == 0){

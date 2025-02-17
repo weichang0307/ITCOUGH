@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.itcough.model.AudioRecord
 import com.example.itcough.`object`.Connection
+import com.example.itcough.`object`.DialogManager
 import com.example.itcough.`object`.Global
 import com.example.itcough.`object`.GoogleService
 import com.example.itcough.view.AdapterChooseFile
@@ -29,7 +30,7 @@ import com.google.gson.Gson
 import java.io.BufferedReader
 import java.util.UUID
 
-class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
+class AiGenerateActivity : ComponentActivity() {
 
     private lateinit var btnLeft: ImageButton
     private lateinit var btnRight: ImageButton
@@ -37,9 +38,6 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
     private lateinit var btnGenerate: Button
     private lateinit var btnSave: Button
     private lateinit var btnAdvanceSetting: Button
-    private lateinit var adapterChooseCoughFile: AdapterChooseFile
-    private lateinit var dialogChooseCoughFile: AlertDialog
-    private lateinit var searchInput: TextInputEditText
     private var coughRecord: AudioRecord? = null
 
 
@@ -70,7 +68,6 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         }
         btnChooseCough.setOnClickListener(){
             showChooseCoughDialog()
-            sendGetCoughAudioListRequest()
         }
         btnAdvanceSetting.setOnClickListener(){
             val intent = Intent(this, AdvanceSetting::class.java)
@@ -108,21 +105,6 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         }
         return super.onKeyDown(keyCode, event)
     }
-    override fun onItemClickListener(position: Int) {
-        runOnUiThread{
-            coughRecord = adapterChooseCoughFile.records[position]
-            btnChooseCough.setText(coughRecord?.filename.toString())
-            adapterChooseCoughFile.records.clear()
-            dialogChooseCoughFile.dismiss()
-        }
-    }
-    override fun onItemLongClickListener(position: Int) {
-        val record = adapterChooseCoughFile.records[position]
-        val intent = Intent(this, AudioPlayerActivity::class.java)
-        intent.putExtra("FILE_PATH", record.filePath)
-        intent.putExtra("FILE_NAME", record.filename)
-        startActivity(intent)
-    }
 
     private fun getGenerateData(): Map<String, String>? {
         if(btnChooseCough.text.isEmpty()) {
@@ -141,26 +123,7 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         )
     }
     @SuppressLint("NotifyDataSetChanged")
-    private fun sendGetCoughAudioListRequest() {
-        val jsonData = Gson().toJson(mapOf(
-            "userId" to GoogleService.userID
-        ))
-        Connection.sendJsonPostRequest(
-            Connection.GET_COUGH_AUDIO_LIST_PATH,
-            jsonData,
-            onRequestSuccess = { connection ->
-                val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
-                runOnUiThread {
-                    adapterChooseCoughFile.allrecords.clear()
-                    adapterChooseCoughFile.allrecords.addAll(Connection.parseAudioRecords(response))
-                    searchInput.setText("")
-                    searchDatabase("")
-                    adapterChooseCoughFile.notifyDataSetChanged()
-                }
 
-            }
-        )
-    }
     private fun sendGeneratePostRequest() {
         val generateData = getGenerateData() ?: return
         val jsonData = Gson().toJson(generateData)
@@ -216,31 +179,14 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
         )
     }
     private fun showChooseCoughDialog() {
-        val builder = AlertDialog.Builder(this)
-        val inflater = LayoutInflater.from(this)
-        val dialogView = inflater.inflate(R.layout.dialog_choose_file, null)
-        val recyclerview = dialogView.findViewById<RecyclerView>(R.id.recyclerview)
-        searchInput = dialogView.findViewById<TextInputEditText>(R.id.search_input)
-        searchInput.addTextChangedListener(object: TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                val query = p0.toString()
-                searchDatabase(query)
+        DialogManager.showChooseAudioDialog(
+            this,
+            title = "Save Cough",
+            onOnItemClickListener = { record ->
+                btnChooseCough.setText(record.filename)
+                coughRecord = record
             }
-            override fun afterTextChanged(p0: Editable?) {}
-        })
-        recyclerview.layoutManager = LinearLayoutManager(this)
-        adapterChooseCoughFile = AdapterChooseFile(this)
-        recyclerview.adapter = adapterChooseCoughFile
-        dialogChooseCoughFile = builder.setView(dialogView)
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        dialogChooseCoughFile.window?.apply {
-            setBackgroundDrawableResource(android.R.color.transparent) // 设置背景透明
-            setDimAmount(0.8f) // 设置背景遮罩透明度
-        }
-        dialogChooseCoughFile.show()
+        )
     }
 
     private fun showSaveFileDialog(context: Context) {
@@ -298,16 +244,6 @@ class AiGenerateActivity : ComponentActivity(), OnItemClickListener {
     }
 
 
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun searchDatabase(query: String) {
-        adapterChooseCoughFile.records.clear()
-        val queryResult = adapterChooseCoughFile.allrecords.filter { it.filename.contains(query) }
-        adapterChooseCoughFile.records.addAll(queryResult)
-        runOnUiThread{
-            adapterChooseCoughFile.notifyDataSetChanged()
-        }
-    }
     private fun refreshUI(){
         if (isGenerate) sendCleanTemperRequest()
         temperUUID = null

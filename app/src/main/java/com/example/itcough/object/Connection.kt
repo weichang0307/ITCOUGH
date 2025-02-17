@@ -17,12 +17,15 @@ object Connection {
     const val SET_USER_INFO_PATH = "set_user_info/"
     const val SIGN_UP_PATH = "sign_up/"
     const val GET_USER_INFO_PATH = "get_user_info/"
+    const val UPLOAD_TO_PUBLIC_COUGH = "upload_to_public_cough/"
+    const val UPLOAD_TO_PUBLIC_MUSIC = "upload_to_public_music/"
     fun sendJsonPostRequest(
         path: String,
         jsonData: String,
         onRequestSuccess: (connection: HttpURLConnection) -> Unit = {},
         onRequestFail: (connection: HttpURLConnection) -> Unit = {},
-        onConnectionFail: (e: Exception) -> Unit = {}
+        onConnectionFail: (e: Exception) -> Unit = {},
+        onFinish: () -> Unit = {}
     ) {
         Thread {
             val urlString = "${Global.URL}/$path"
@@ -57,6 +60,7 @@ object Connection {
                 onConnectionFail(e)
             } finally {
                 connection?.disconnect()
+                onFinish()
             }
         }.start()
     }
@@ -66,7 +70,8 @@ object Connection {
         dataArray: ByteArray,
         onRequestSuccess: (connection: HttpURLConnection) -> Unit = {},
         onRequestFail: (connection: HttpURLConnection) -> Unit = {},
-        onConnectionFail: (e: Exception) -> Unit = {}
+        onConnectionFail: (e: Exception) -> Unit = {},
+        onFinish: () -> Unit = {}
     ) {
         Thread {
             val urlString = "${Global.URL}/$path"
@@ -115,6 +120,7 @@ object Connection {
                 onConnectionFail(e)
             } finally {
                 connection?.disconnect()
+                onFinish()
             }
         }.start()
 

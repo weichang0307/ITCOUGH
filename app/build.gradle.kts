@@ -47,6 +47,7 @@ android {
 }
 
 dependencies {
+    implementation("com.arthenica:ffmpeg-kit-full:6.0.LTS")
     implementation(libs.gson)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

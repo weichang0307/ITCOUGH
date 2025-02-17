@@ -46,6 +46,7 @@
     <color name="black_transparent">#33000000</color>
     <color name="black_transparent99">#99000000</color>
     <color name="white_transparent">#33FFFFFF</color>
+    <color name="yellow_transparent">#33FFFF00</color>
     <color name="transparent">#00000000</color>
     <color name="gray_mid">#AAAAAA</color>
 </resources>

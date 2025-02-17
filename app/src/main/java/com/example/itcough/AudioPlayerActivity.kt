@@ -1,6 +1,7 @@
 package com.example.itcough
 
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -11,6 +12,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.example.itcough.`object`.Global
 
 class AudioPlayerActivity : AppCompatActivity() {
@@ -46,8 +48,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
 
         val path = intent.getStringExtra("FILE_PATH") ?: ""
-        Log.d("myTest", path)
-
+        var uri = intent.getStringExtra("FILE_URI") ?: ""
         val name = intent.getStringExtra("FILE_NAME") ?: ""
         tvPath = findViewById(R.id.tvPath)
         tvPath.setText(path)
@@ -55,17 +56,21 @@ class AudioPlayerActivity : AppCompatActivity() {
         tvName.setText(name)
         tvTime = findViewById(R.id.tvTime)
         tvTime.setText("00:00")
-        if (path.isEmpty()) {
-            Toast.makeText(this, "No audio URL provided", Toast.LENGTH_SHORT).show()
+        if (!path.isEmpty()) {
+            uri = "${Global.URL}/" + "get_uploads_file/" + path.replace("\\", "^")
+            Log.d("myTag", "play file at path: $path , uri : $uri")
+        }else if (!uri.isEmpty()){
+            Log.d("myTag", "play file at uri : $uri")
+        }else{
+            Toast.makeText(this, "No audio URI provided", Toast.LENGTH_SHORT).show()
             return
         }
-        val url = "${Global.URL}/" + "get_uploads_file/" + path.replace("\\", "^")
-        Log.d("myTag", url)
+
         // 播放/暫停按鈕
         playPauseButton = findViewById(R.id.playPauseButton)
         playPauseButton.alpha = 0.1f
-        prepareAudio(url)
-
+        //prepareAudio(url)
+        prepareAudio(uri.toUri())
         // SeekBar
         seekBar = findViewById(R.id.seekBar)
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -82,10 +87,10 @@ class AudioPlayerActivity : AppCompatActivity() {
         })
     }
 
-    private fun prepareAudio(url: String) {
+    private fun prepareAudio(uri: Uri) {
         try {
             mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
+                setDataSource(this@AudioPlayerActivity, uri)
                 setOnPreparedListener {
                     playPauseButton.setOnClickListener {
                         if (isPlaying_) {
@@ -147,4 +152,5 @@ class AudioPlayerActivity : AppCompatActivity() {
         mediaPlayer?.release()
         handler.removeCallbacksAndMessages(null)  // 清除 Handler
     }
+
 }

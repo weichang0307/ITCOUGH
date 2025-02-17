@@ -7,9 +7,11 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
@@ -44,6 +46,7 @@ class SetUpActivity : ComponentActivity() {
     private lateinit var radioGroupGender: RadioGroup
     private lateinit var radioGroupEducation: RadioGroup
     private lateinit var connectingMask: LinearLayout
+    private lateinit var tvHint: TextView
     private lateinit var signUpButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +63,7 @@ class SetUpActivity : ComponentActivity() {
         radioGroupGender = findViewById(R.id.radioGroupGender)
         connectingMask = findViewById(R.id.connectingMask)
         signUpButton = findViewById(R.id.signUpButton)
+        tvHint = findViewById(R.id.tvHint)
         googleSignInClient = GoogleService.getGoogleSignInClient(this)
         GoogleService.updateUserInfo(this)
         updateUserUI()
@@ -67,6 +71,12 @@ class SetUpActivity : ComponentActivity() {
         signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             GoogleService.onSignInResult(this, result)
             updateUserUI()
+        }
+
+        val topBar  = findViewById<View>(R.id.topBarLayout)
+        val btnLeft = topBar.findViewById<ImageButton>(R.id.btnLeft)
+        btnLeft.setOnClickListener {
+            exitPage()
         }
         signInButton.setOnClickListener {
             if (GoogleService.isSignIn(this)) {
@@ -87,7 +97,10 @@ class SetUpActivity : ComponentActivity() {
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
-                    mapOf("userName" to nameInput.text.toString())
+                    mapOf(
+                        "name" to nameInput.text.toString(),
+                        "userId" to GoogleService.userID.toString()
+                    )
                 )
             }
         }
@@ -95,7 +108,10 @@ class SetUpActivity : ComponentActivity() {
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
-                    mapOf("userAge" to ageInput.text.toString())
+                    mapOf(
+                        "age" to ageInput.text.toString(),
+                        "userId" to GoogleService.userID.toString()
+                    )
                 )
             }
         }
@@ -109,7 +125,10 @@ class SetUpActivity : ComponentActivity() {
                 }
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
-                    mapOf("userGender" to gender.toString())
+                    mapOf(
+                        "gender" to gender.toString(),
+                        "userId" to GoogleService.userID.toString()
+                    )
                 )
             }
         }
@@ -124,7 +143,10 @@ class SetUpActivity : ComponentActivity() {
                 }
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
-                    mapOf("userEducation" to education.toString())
+                    mapOf(
+                        "education" to education.toString(),
+                        "userId" to GoogleService.userID.toString()
+                    )
                 )
             }
         }
@@ -139,7 +161,10 @@ class SetUpActivity : ComponentActivity() {
                 if (GoogleService.isSignIn(this@SetUpActivity) && Account.isSignUp) {
                     Account.sendSetUserInfoRequest(
                         GoogleService.userID.toString(),
-                        mapOf("musicProficiency" to (seekBarMusicProficiency.progress + 1).toString())
+                        mapOf(
+                            "musicProficiency" to (seekBarMusicProficiency.progress + 1).toString(),
+                            "userId" to GoogleService.userID.toString()
+                        )
                     )
                 }
             }
@@ -331,6 +356,7 @@ class SetUpActivity : ComponentActivity() {
     private fun switchToSignUpMode() {
         signUpButton.isVisible = true
         infoView.isVisible = true
+        tvHint.isVisible = true
         nameInput.setText("")
         ageInput.setText("")
         radioGroupGender.clearCheck()
@@ -341,11 +367,13 @@ class SetUpActivity : ComponentActivity() {
     private fun switchToSettingMode() {
         signUpButton.isVisible = false
         infoView.isVisible = true
+        tvHint.isVisible = false
         signInButton.text = "Sign Out"
     }
     private fun switchToSignInMode() {
         signUpButton.isVisible = false
         infoView.isVisible = false
+        tvHint.isVisible = false
         signInButton.text = "Sign In"
     }
 }

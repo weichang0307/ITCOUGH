@@ -32,8 +32,11 @@ class MainActivity : ComponentActivity() {
         cardCreate = findViewById(R.id.cardCreate)
         cardSetting = findViewById(R.id.cardSettings)
         btnAccount = findViewById(R.id.btnAccount)
-
-
+        GoogleService.updateUserInfo(this)
+        if (GoogleService.isSignIn(this)) {
+            Account.sendGetUserInfoRequest(GoogleService.userID!!)
+            updateUserUI()
+        }
 
 
         cardFile.setOnClickListener{
@@ -59,7 +62,7 @@ class MainActivity : ComponentActivity() {
         }
         cardSetting.setOnClickListener{
             if (Account.isSignIn(this)){
-                startActivity(Intent(this, SettingActivity::class.java))
+                startActivity(Intent(this, SetUpActivity::class.java))
             }else{
                 startActivity(Intent(this, SetUpActivity::class.java))
             }

@@ -21,9 +21,10 @@
             android:gravity="center"
             android:paddingBottom="10dp"
             android:paddingTop="50dp"
-            android:text="Select Cough"
+            android:text="Select Audio"
             android:textColor="@color/white"
             android:textSize="20sp" />
+
         <RelativeLayout
             android:background="@drawable/gallery_background"
             android:layout_marginTop="15dp"
@@ -54,7 +55,24 @@
                     android:textColorHint="@color/white"
                     android:imeOptions="actionSearch" />
             </com.google.android.material.textfield.TextInputLayout>
+            <FrameLayout
+                android:id="@+id/processingMask"
+                android:layout_below="@id/inputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:text="Processing..."
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="30sp"/>
 
+            </FrameLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerview"
                 android:layout_width="match_parent"

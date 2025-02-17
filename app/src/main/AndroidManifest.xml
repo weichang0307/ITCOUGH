@@ -30,6 +30,11 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ImportActivity"
+            android:exported="false"
+            android:label="@string/title_activity_import"
+            android:theme="@style/Theme.ITCOUGH" />
+        <activity
             android:name=".SetUpActivity"
             android:exported="false"
             android:label="@string/title_activity_set_up"
