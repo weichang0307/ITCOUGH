@@ -12,7 +12,6 @@ object Global {
     //const val URL = "http://192.168.0.217:8002"
     const val URL = "http://140.114.207.214:8002"
     //const val URL = "http://172.116.5.36:8002"
-
     //const val URL = "http://172.20.10.2:8002"
 
     var isRecording = false
