@@ -66,7 +66,7 @@
                     android:paddingEnd="20dp"
                     android:layout_marginStart="20dp"
                     android:elevation="1dp"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/black"
                     android:layout_gravity="center">
                 </Button>
                 <Button
@@ -81,15 +81,14 @@
                     android:backgroundTint="@color/blue"
                     android:layout_marginStart="20dp"
                     android:elevation="1dp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
                     android:layout_gravity="center">
                 </Button>
-
             </LinearLayout>
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"
+                android:background="@color/grayDark"
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="0dp"/>
             <TextView
@@ -131,6 +130,7 @@
                         android:textSize="20sp"
                         android:imeOptions="actionDone"
                         android:hint="input your name"
+                        android:textColor="@color/white"
                         android:inputType="textPersonName"
                         android:textColorHint="@color/gray_mid"
                         android:background="@drawable/input_text_background"/>
@@ -149,6 +149,7 @@
                         android:paddingHorizontal="20dp"
                         android:paddingVertical="5dp"
                         android:textSize="20sp"
+                        android:textColor="@color/white"
                         android:hint="input your age"
                         android:inputType="number"
                         android:textColorHint="@color/gray_mid"
@@ -173,6 +174,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="Male" />
 
                         <RadioButton
@@ -182,6 +184,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="Female" />
 
                         <RadioButton
@@ -191,6 +194,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="Other" />
                     </RadioGroup>
 
@@ -215,6 +219,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="High School" />
 
                         <RadioButton
@@ -224,6 +229,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="Bachelor" />
 
                         <RadioButton
@@ -233,6 +239,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="Master" />
 
                         <RadioButton
@@ -242,6 +249,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:textSize="18sp"
+                            android:buttonTint="@color/gray"
                             android:text="Doctorate" />
                     </RadioGroup>
                     <LinearLayout

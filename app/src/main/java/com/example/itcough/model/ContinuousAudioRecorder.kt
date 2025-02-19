@@ -125,7 +125,7 @@ class ContinuousAudioRecorder: Service() {
                         }else{
                             if (coughBuffer.size() > 0) {
                                 if (marginFrameAmount < MARGIN_SIZE_FRAMES) {
-                                    if (marginFrameAmount > 0) {
+                                    if (marginFrameAmount > 1) {
                                         // 提取已寫入的數據
                                         val data = coughBuffer.toByteArray()
                                         val start = (coughFrameAmount - 1) * FRAME_SIZE

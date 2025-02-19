@@ -71,6 +71,7 @@ class SetUpActivity : ComponentActivity() {
         signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             GoogleService.onSignInResult(this, result)
             updateUserUI()
+            connectingMask.isVisible = false
         }
 
         val topBar  = findViewById<View>(R.id.topBarLayout)
