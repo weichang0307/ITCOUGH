@@ -19,10 +19,14 @@ import androidx.core.app.ActivityCompat
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import android.Manifest
-import android.media.MediaRecorder
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.example.itcough.model.ContinuousAudioRecorder
+import com.example.itcough.`object`.Connection
 import com.example.itcough.`object`.Global
+import com.example.itcough.`object`.GoogleService
+import com.google.gson.Gson
+import kotlin.system.measureTimeMillis
 
 class RecordPage : ComponentActivity() {
 
@@ -86,7 +90,7 @@ class RecordPage : ComponentActivity() {
 
         tvTimer.setOnClickListener{
             if(!Global.isRecording){
-                startRecording()
+                showIsPublishDialog()
             }
         }
         if(Global.isRecording){
@@ -96,16 +100,47 @@ class RecordPage : ComponentActivity() {
         }
         Global.isDetected = false
     }
+    private fun showIsPublishDialog() {
+        AlertDialog.Builder(this)
+            .setMessage("Are you willing to publish detected coughs to co-create database?")
+            .setPositiveButton("Yes") { _, _ ->
+                Global.isPublish = true
+                showAcknowledgeDialog()
+            }
+            .setNegativeButton("No") { _, _ ->
+                Global.isPublish = false
+                showAcknowledgeDialog()
+            }
+            .setNeutralButton("Cancel") { dialog, _ ->
+                dialog.dismiss() // 只关闭对话框，什么也不做
+            }
+            .show()
+    }
+    private fun showAcknowledgeDialog () {
+        AlertDialog.Builder(this)
+            .setMessage("The cough detector will keep recording in the background\n\n Any other applications using microphone might temporarily block the detector")
+            .setPositiveButton("Confirm") { _, _ ->
+                startRecording() // 用户确认放弃时调用
+            }
+            .setNeutralButton("Cancel") { dialog, _ ->
+                dialog.dismiss() // 只关闭对话框，什么也不做
+            }
+            .show()
+    }
     private fun stopRecorder(){
+        Log.d("myTag", "stopRecorder")
+        Global.isRecording = false
+        stopRecording()
+        stopRecordUI()
+    }
+    private fun stopRecordUI() {
         Log.d("myTag", "stopRecorder")
         stopRecording()
         stopPulse()
         dismiss()
-        Global.isRecording = false
         tvStatus.setText("Start")
+        tvTimer.isClickable = true
         btnRight.isVisible = true
-
-
     }
     private val requestAudioPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -130,11 +165,41 @@ class RecordPage : ComponentActivity() {
             Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
         }
     }
+    private fun sendStartRecordPostRequest() {
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+            "isPublish" to Global.isPublish
+        ))
+        Log.d("myTag", jsonData.toString())
+        Connection.sendJsonPostRequest(
+            Connection.START_RECORD_PATH,
+            jsonData,
+            onRequestSuccess = {
+                runOnUiThread{
+                    startStreaming()
+                }
+            },
+            onRequestFail = {
+                runOnUiThread{
+                    Toast.makeText(this, "Fail to start", Toast.LENGTH_SHORT).show()
+                    stopRecordUI()
+                }
+            },
+            onConnectionFail = {
+                runOnUiThread{
+                    Toast.makeText(this, "Fail to connect to server", Toast.LENGTH_SHORT).show()
+                    stopRecordUI()
+                }
+            }
+        )
+    }
+
     private fun startRecording(){
         Log.d("myTag", "startRecording")
         val setStr = "Initializing"
         tvStatus.setText(setStr)
         btnRight.isVisible = false
+        tvTimer.isClickable = false
         val fadeInAnimator = ObjectAnimator.ofFloat(tvStatus, "alpha", 0f, 1f).apply {
             duration = 1500
             interpolator = AccelerateDecelerateInterpolator()
@@ -149,7 +214,7 @@ class RecordPage : ComponentActivity() {
             requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             return
         }
-        startStreaming()
+        sendStartRecordPostRequest()
     }
     private fun startPulse() {
         cough_detecting.run()
@@ -165,6 +230,7 @@ class RecordPage : ComponentActivity() {
         val intent = Intent(this, ContinuousAudioRecorder::class.java)
         startService(intent)
         Global.isRecording = true
+        Global.detectStartTime = System.currentTimeMillis()
         tvStatus.text = "Detecting"
         startPulse()
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED

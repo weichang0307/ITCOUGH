@@ -19,6 +19,8 @@ object Connection {
     const val GET_USER_INFO_PATH = "get_user_info/"
     const val UPLOAD_TO_PUBLIC_COUGH = "upload_to_public_cough/"
     const val UPLOAD_TO_PUBLIC_MUSIC = "upload_to_public_music/"
+    const val STOP_RECORD_PATH = "stop_record/"
+    const val START_RECORD_PATH = "start_record/"
     fun sendJsonPostRequest(
         path: String,
         jsonData: String,

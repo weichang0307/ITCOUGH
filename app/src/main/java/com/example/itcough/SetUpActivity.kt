@@ -66,6 +66,13 @@ class SetUpActivity : ComponentActivity() {
         tvHint = findViewById(R.id.tvHint)
         googleSignInClient = GoogleService.getGoogleSignInClient(this)
         GoogleService.updateUserInfo(this)
+        if (!GoogleService.isSignIn(this)) {
+            switchToSignInMode()
+        } else if (!Account.isSignUp) {
+            switchToSignUpMode()
+        } else {
+            switchToSettingMode()
+        }
         updateUserUI()
 
         signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -77,7 +84,7 @@ class SetUpActivity : ComponentActivity() {
         val topBar  = findViewById<View>(R.id.topBarLayout)
         val btnLeft = topBar.findViewById<ImageButton>(R.id.btnLeft)
         btnLeft.setOnClickListener {
-            exitPage()
+            finish()
         }
         signInButton.setOnClickListener {
             if (GoogleService.isSignIn(this)) {
@@ -92,7 +99,7 @@ class SetUpActivity : ComponentActivity() {
             }
         }
         signUpButton.setOnClickListener {
-            sendSignUpRequest()
+            startActivity(Intent(this, SignUpActivity::class.java))
         }
         setEditTextAction(nameInput) {
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
@@ -173,6 +180,11 @@ class SetUpActivity : ComponentActivity() {
 
 
     }
+
+    override fun onResume() {
+        super.onResume()
+        updateUserUI()
+    }
     private fun updateUserUI() {
 
         runOnUiThread {
@@ -227,48 +239,6 @@ class SetUpActivity : ComponentActivity() {
         }
 
     }
-    private fun getUserData () : Map<String, String>?{
-        val name = nameInput.text.toString()
-        if (name.isEmpty()) {
-            Toast.makeText(this, "User name can not be empty", Toast.LENGTH_SHORT).show()
-            return null
-        }
-        val age = ageInput.text.toString()
-        if (age.isEmpty()) {
-            Toast.makeText(this, "User age can not be empty", Toast.LENGTH_SHORT).show()
-            return null
-        }
-        val gender = when (radioGroupGender.checkedRadioButtonId) {
-            R.id.radioMale -> "Male"
-            R.id.radioFemale -> "Female"
-            R.id.radioOther -> "Other"
-            else -> null
-        }
-        if (gender == null) {
-            Toast.makeText(this, "choose your gender", Toast.LENGTH_SHORT).show()
-            return null
-        }
-        val education = when (radioGroupEducation.checkedRadioButtonId) {
-            R.id.radioHighSchool -> "High School"
-            R.id.radioBachelor -> "Bachelor"
-            R.id.radioMaster -> "Master"
-            R.id.radioDoctorate -> "Doctorate"
-            else -> null
-        }
-        if (education == null) {
-            Toast.makeText(this, "choose your education level", Toast.LENGTH_SHORT).show()
-            return null
-        }
-        val musicProficiency = (seekBarMusicProficiency.progress + 1).toString()
-        return mapOf(
-            "userId" to GoogleService.userID.toString(),
-            "name" to name,
-            "age" to age,
-            "gender" to gender,
-            "education" to education ,
-            "musicProficiency" to musicProficiency
-        )
-    }
     @SuppressLint("SetTextI18n")
     private fun setUserData () {
         if (!Account.isSignUp) {
@@ -300,69 +270,10 @@ class SetUpActivity : ComponentActivity() {
         }
     }
 
-    private fun sendSignUpRequest () {
-        val userData = getUserData() ?: return
-        val jsonData = Gson().toJson(userData)
-        connectingMask.isVisible = true
-        Connection.sendJsonPostRequest(
-            Connection.SIGN_UP_PATH,
-            jsonData,
-            onRequestSuccess = {
-                runOnUiThread {
-                    Toast.makeText(this, "User sign up successfully", Toast.LENGTH_SHORT).show()
-                    updateUserUI()
-                    connectingMask.isVisible = false
-                }
-            },
-            onRequestFail = {
-                runOnUiThread {
-                    Toast.makeText(this, "Fail to save user profile to server", Toast.LENGTH_SHORT).show()
-                    connectingMask.isVisible = false
-                }
-            },
-            onConnectionFail = {
-                runOnUiThread {
-                    Toast.makeText(this, "Fail to connect to server", Toast.LENGTH_SHORT).show()
-                    connectingMask.isVisible = false
-                }
-            }
-
-        )
-    }
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            exitPage()
-            return true;
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-    private fun exitPage() {
-        if (GoogleService.isSignIn(this) && !Account.isSignUp){
-            showHasNotSingUpDialog(this)
-        }else {
-            finish()
-        }
-    }
-    private fun showHasNotSingUpDialog(context: Context) {
-        AlertDialog.Builder(context)
-            .setMessage("The user has not been signed up\n You sure you want to leave the page?")
-            .setNegativeButton("Leave") { _, _ ->
-                finish() // 用户确认放弃时调用
-            }
-            .setNeutralButton("Cancel") { dialog, _ ->
-                dialog.dismiss() // 只关闭对话框，什么也不做
-            }
-            .show()
-    }
     private fun switchToSignUpMode() {
         signUpButton.isVisible = true
-        infoView.isVisible = true
+        infoView.isVisible = false
         tvHint.isVisible = true
-        nameInput.setText("")
-        ageInput.setText("")
-        radioGroupGender.clearCheck()
-        radioGroupEducation.clearCheck()
-        seekBarMusicProficiency.progress = 4
         signInButton.text = "Sign Out"
     }
     private fun switchToSettingMode() {

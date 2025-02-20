@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:id="@+id/connectingMask"
+        android:elevation="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:visibility="invisible"
+        android:background="@color/black_transparent99" >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="40dp"
+            android:text="Processing..."
+            android:textColor="@color/white"/>
+    </LinearLayout>
+    <LinearLayout
+        android:elevation="1dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/background"
+        android:orientation="vertical">
+        <include
+            android:id="@+id/topBarLayout"
+            layout="@layout/topbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top" />
+        <ImageView
+            android:id="@+id/imageProfileView"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="15dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/circle_button_background"
+            android:contentDescription="Profile Photo"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_person" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_margin="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/contentLayout">
+            <Button
+                android:id="@+id/btnNext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textColor="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:backgroundTint="@color/blue"
+                android:text="next"
+                />
+            <Button
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:padding="10dp"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:backgroundTint="@color/blue"
+                android:text="back"
+                />
+            <Button
+                android:id="@+id/btnSignUp"
+                android:layout_width="wrap_content"
+                android:padding="10dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:backgroundTint="@color/blue"
+                android:text="Sign Up"
+                />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="invisible"
+                android:id="@+id/step1">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Name :"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/white"
+                    android:textSize="22sp"/>
+                <EditText
+                    android:id="@+id/nameInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="5dp"
+                    android:textSize="20sp"
+                    android:imeOptions="actionDone"
+                    android:hint="input your name"
+                    android:textColor="@color/white"
+                    android:inputType="textPersonName"
+                    android:textColorHint="@color/gray_mid"
+                    android:background="@drawable/input_text_background"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Age :"
+                    android:textColor="@color/white"
+                    android:textSize="22sp"/>
+                <EditText
+                    android:id="@+id/ageInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="5dp"
+                    android:textSize="20sp"
+                    android:textColor="@color/white"
+                    android:hint="input your age"
+                    android:inputType="number"
+                    android:textColorHint="@color/gray_mid"
+                    android:background="@drawable/input_text_background"/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="invisible"
+                android:id="@+id/step2">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Gender :"
+                    android:textColor="@color/white"
+                    android:textSize="22sp"/>
+                <RadioGroup
+                    android:id="@+id/radioGroupGender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/radioMale"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="Male" />
+
+                    <RadioButton
+                        android:id="@+id/radioFemale"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="Female" />
+
+                    <RadioButton
+                        android:id="@+id/radioOther"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="Other" />
+                </RadioGroup>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="invisible"
+                android:id="@+id/step3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Highest Education Level :"
+                    android:textColor="@color/white"
+                    android:textSize="22sp"/>
+                <RadioGroup
+                    android:id="@+id/radioGroupEducation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/radioHighSchool"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="High School or under" />
+
+                    <RadioButton
+                        android:id="@+id/radioBachelor"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="Bachelor" />
+
+                    <RadioButton
+                        android:id="@+id/radioMaster"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="Master" />
+
+                    <RadioButton
+                        android:id="@+id/radioDoctorate"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="18sp"
+                        android:buttonTint="@color/gray"
+                        android:text="Doctorate" />
+                </RadioGroup>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="invisible"
+                android:id="@+id/step4">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Proficiency in Music :"
+                        android:textColor="@color/white"
+                        android:textSize="22sp"/>
+                    <TextView
+                        android:id="@+id/tvMusicProficiencyValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5/10"
+                        android:textSize="18sp"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@color/white"
+                        android:layout_marginTop="8dp"/>
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/seekBarMusicProficiency"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="20dp"
+                    android:max="9"
+                    android:progress="4" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

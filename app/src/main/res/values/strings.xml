@@ -16,5 +16,6 @@
     <string name="generate">Generate</string>
     <string name="title_activity_set_up">SetUpActivity</string>
     <string name="title_activity_import">ImportActivity</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
 
 </resources>

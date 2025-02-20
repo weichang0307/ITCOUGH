@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:text="Max Cough Audio Length"
+                android:text="Max Cough Audio Length (second)"
                 android:textSize="18sp"
                 android:layout_marginBottom="8dp" />
 
@@ -65,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:text="Cough Spacing Length"
+                android:text="Cough Spacing Length (second)"
                 android:textSize="18sp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp" />

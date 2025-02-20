@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
         btnAccount = findViewById(R.id.btnAccount)
         GoogleService.updateUserInfo(this)
         if (GoogleService.isSignIn(this)) {
-            Account.sendGetUserInfoRequest(GoogleService.userID!!)
+            Account.sendGetUserInfoRequest(GoogleService.userID.toString())
             updateUserUI()
         }
 

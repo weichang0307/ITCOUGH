@@ -57,6 +57,7 @@ class ContinuousAudioRecorder: Service() {
     override fun onDestroy() {
         super.onDestroy()
         stopRecording()
+        sendStopRecordPostRequest()
     }
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -273,7 +274,17 @@ class ContinuousAudioRecorder: Service() {
         audioRecord?.release()
         yamnetModel.close()
     }
-
+    private fun sendStopRecordPostRequest() {
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+            "detectTime" to System.currentTimeMillis() - Global.detectStartTime
+        ))
+        Log.d("myTag", jsonData.toString())
+        Connection.sendJsonPostRequest(
+            Connection.STOP_RECORD_PATH,
+            jsonData,
+        )
+    }
 
     private fun byteArrayToFloatArray(buffer: ByteArray): FloatArray {
         val floatArray = FloatArray(buffer.size / 2) // 每兩個字節組成一個浮點數

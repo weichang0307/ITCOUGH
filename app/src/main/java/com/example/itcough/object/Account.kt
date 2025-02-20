@@ -1,6 +1,7 @@
 package com.example.itcough.`object`
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.example.itcough.R
