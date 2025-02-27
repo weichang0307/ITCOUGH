@@ -1,38 +1,27 @@
 package com.example.itcough
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
-import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.example.itcough.`object`.Account
 import com.example.itcough.`object`.Connection
-import com.example.itcough.`object`.Global
 import com.example.itcough.`object`.GoogleService
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.material.internal.ViewUtils.hideKeyboard
 import com.google.gson.Gson
-import java.net.HttpURLConnection
 
 class SignUpActivity : ComponentActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -67,8 +56,7 @@ class SignUpActivity : ComponentActivity() {
         GoogleService.updateUserInfo(this)
         updateUserUI()
         initSteps()
-        step = 1
-        switchToStep(step, null)
+        switchToStep(1, null)
         val topBar  = findViewById<View>(R.id.topBarLayout)
         val btnLeft = topBar.findViewById<ImageButton>(R.id.btnLeft)
         btnLeft.setOnClickListener {
@@ -77,11 +65,9 @@ class SignUpActivity : ComponentActivity() {
 
         btnNext.setOnClickListener {
             switchToStep(step + 1, step)
-            step++
         }
         btnBack.setOnClickListener {
             switchToStep(step - 1, step)
-            step--
         }
         btnSignUp.setOnClickListener {
             sendSignUpRequest()
@@ -96,6 +82,8 @@ class SignUpActivity : ComponentActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
+
+
     }
     private fun updateUserUI() {
 
@@ -107,17 +95,27 @@ class SignUpActivity : ComponentActivity() {
                 .into(imageProfileView)
         }
     }
-    private fun getUserData () : Map<String, String>?{
+    private fun getUserName () : String? {
         val name = nameInput.text.toString()
         if (name.isEmpty()) {
             Toast.makeText(this, "User name can not be empty", Toast.LENGTH_SHORT).show()
             return null
         }
+        return name
+    }
+    private fun getUserAge () : String? {
         val age = ageInput.text.toString()
         if (age.isEmpty()) {
             Toast.makeText(this, "User age can not be empty", Toast.LENGTH_SHORT).show()
             return null
         }
+        if (age.toInt() < 18 || age.toInt() > 65) {
+            Toast.makeText(this, "User age must between 18 and 65", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        return age
+    }
+    private fun getUserGender () : String? {
         val gender = when (radioGroupGender.checkedRadioButtonId) {
             R.id.radioMale -> "Male"
             R.id.radioFemale -> "Female"
@@ -128,6 +126,9 @@ class SignUpActivity : ComponentActivity() {
             Toast.makeText(this, "choose your gender", Toast.LENGTH_SHORT).show()
             return null
         }
+        return gender
+    }
+    private fun getUserEducation () : String? {
         val education = when (radioGroupEducation.checkedRadioButtonId) {
             R.id.radioHighSchool -> "High School"
             R.id.radioBachelor -> "Bachelor"
@@ -139,7 +140,20 @@ class SignUpActivity : ComponentActivity() {
             Toast.makeText(this, "choose your education level", Toast.LENGTH_SHORT).show()
             return null
         }
+        return education
+    }
+    private fun getUserMusicProficiency () : String? {
         val musicProficiency = (seekBarMusicProficiency.progress + 1).toString()
+        return musicProficiency
+    }
+
+
+    private fun getUserData () : Map<String, String>?{
+        val name = getUserName() ?: return null
+        val age = getUserAge() ?: return null
+        val gender = getUserGender() ?: return null
+        val education = getUserEducation() ?: return null
+        val musicProficiency = getUserMusicProficiency() ?: return null
         return mapOf(
             "userId" to GoogleService.userID.toString(),
             "name" to name,
@@ -193,23 +207,42 @@ class SignUpActivity : ComponentActivity() {
             finish()
         }
     }
-    private fun switchToStep(step: Int, from: Int?) {
+    private fun switchToStep(toStep: Int, from: Int?) {
+        when(from) {
+            null -> {}
+            1 -> {
+                getUserName() ?: return
+                getUserAge() ?: return
+            }
+            2 -> {
+                getUserGender() ?: return
+            }
+            3 -> {
+                getUserEducation() ?: return
+            }
+            4 -> {
+                getUserMusicProficiency() ?: return
+            }
+            else -> return
+        }
         btnBack.isVisible = true
         btnNext.isVisible = true
         btnSignUp.isVisible = false
-        if (step == 1) {
+        if (toStep == 1) {
             btnBack.isVisible = false
         }
-        if (step == maxStep) {
+        if (toStep == maxStep) {
             btnNext.isVisible = false
             btnSignUp.isVisible = true
         }
-        val stepView = findViewById<LinearLayout>(resources.getIdentifier("step$step", "id", packageName))
+        val stepView = findViewById<LinearLayout>(resources.getIdentifier("step$toStep", "id", packageName))
         stepView.isVisible = true
         if (from != null) {
             val fromStepView = findViewById<LinearLayout>(resources.getIdentifier("step$from", "id", packageName))
             fromStepView.isVisible = false
         }
+        step = toStep
+
     }
     private fun initSteps() {
         nameInput.setText("")

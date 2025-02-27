@@ -18,6 +18,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.itcough.model.AudioRecord
+import com.example.itcough.`object`.Connection
 import com.example.itcough.`object`.Global
 import com.example.itcough.`object`.GoogleService
 import com.example.itcough.view.Adapter
@@ -158,9 +159,8 @@ class GalleryActivity : AppCompatActivity(), OnItemClickListener {
             builder.setMessage("Are you sure you want to delete $nbRecords record(s) ?")
 
             builder.setPositiveButton("Delete") {_,_->
-                val toDelete = records.filter {it.isChecked}.toTypedArray()
-                val url = "${Global.URL}/delete"
-                sendDeletePostRequest(url, toDelete.toList())
+
+                sendDeletePostRequest()
                 leaveEditMode()
             }
             builder.setNegativeButton("Cancel") {_,_->}
@@ -185,8 +185,7 @@ class GalleryActivity : AppCompatActivity(), OnItemClickListener {
                     Toast.makeText(this,"A name is required", Toast.LENGTH_LONG).show()
                 }else{
 
-                    val url = "${Global.URL}/rename"
-                    sendRenamePostRequest(url, record, input, dialog)
+                    sendRenamePostRequest(record, input, dialog)
                     dialog.dismiss()
                 }
                 mAdapter.notifyDataSetChanged()
@@ -229,7 +228,7 @@ class GalleryActivity : AppCompatActivity(), OnItemClickListener {
 
 
     private fun fetchAll(){
-        sendGetRecordsRequest("${Global.URL}/get_music/")
+        sendGetRecordsRequest()
 
     }
 
@@ -331,149 +330,75 @@ class GalleryActivity : AppCompatActivity(), OnItemClickListener {
             super.finish()
         }
     }
-    private fun sendRenamePostRequest(urlString: String, record: AudioRecord, name: String, dialog: AlertDialog) {
-        Thread {
-            // 创建 URL 对象
-            val url = URL(urlString)
-
-            // 打开连接
-            val connection = url.openConnection() as HttpURLConnection
-
-            try {
-                // 设置请求方法为 POST
-                connection.requestMethod = "POST"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
-
-                // 设置请求头，表明我们发送的是 JSON 数据
-                connection.setRequestProperty("Content-Type", "application/json")
-
-                // 启用输出流，以便我们可以发送请求体数据
-                connection.doOutput = true
-                val jsonData = Gson().toJson(mapOf("path" to record.filePath, "name" to name))
-                // 发送 JSON 数据
-                connection.outputStream.use { outputStream ->
-                    // 将 JSON 数据转换为字节并写入输出流
-                    outputStream.write(jsonData.toByteArray())
-                    outputStream.flush()
+    private fun sendRenamePostRequest(record: AudioRecord, name: String, dialog: AlertDialog) {
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+            "oldPath" to record.filePath,
+            "oldName" to record.filename,
+            "name" to name
+        ))
+        Connection.sendJsonPostRequest(
+            Connection.RENAME_MUSIC_PATH,
+            jsonData,
+            onRequestSuccess = {
+                runOnUiThread {
+                    leaveEditMode()
+                    Toast.makeText(this@GalleryActivity, "Successful to rename as \"${name}\"", Toast.LENGTH_LONG).show()
+                    sendGetRecordsRequest()
                 }
-
-                // 获取响应代码
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.d("myTag", "Request was successful")
-                    runOnUiThread{
-                        record.filename = name
-                        record.filePath = record.filePath.substringBeforeLast('\\') + "\\" + record.filename + ".wav"
-                        mAdapter.notifyDataSetChanged()
-                    }
-                } else {
-                    Log.d("myTag", "Request failed with response code: $responseCode")
-                    runOnUiThread {
-                        Toast.makeText(this@GalleryActivity, "Fail to rename \"${record.filename}\"", Toast.LENGTH_LONG).show()
-                    }
-
-                }
-            } catch (e: IOException) {
-                Log.e("myTag", "Error sending request", e)
-            } finally {
-                connection.disconnect() // 关闭连接
+            },
+            onRequestFail = {
+                Toast.makeText(this@GalleryActivity, "Fail to rename \"${record.filename}\"", Toast.LENGTH_LONG).show()
+            },
+            onConnectionFail = {
+                Toast.makeText(this@GalleryActivity, "Fail to connect to server", Toast.LENGTH_LONG).show()
             }
-        }.start()
+        )
     }
-    private fun sendDeletePostRequest(urlString: String, targets: List<AudioRecord>) {
-        Thread {
-            // 创建 URL 对象
-            val url = URL(urlString)
-
-            // 打开连接
-            val connection = url.openConnection() as HttpURLConnection
-
-            try {
-                // 设置请求方法为 POST
-                connection.requestMethod = "POST"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
-
-                // 设置请求头，表明我们发送的是 JSON 数据
-                connection.setRequestProperty("Content-Type", "application/json")
-
-                // 启用输出流，以便我们可以发送请求体数据
-                connection.doOutput = true
-                val jsonData = Gson().toJson(targets)
-                // 发送 JSON 数据
-                connection.outputStream.use { outputStream ->
-                    // 将 JSON 数据转换为字节并写入输出流
-                    outputStream.write(jsonData.toByteArray())
-                    outputStream.flush()
+    private fun sendDeletePostRequest() {
+        val toDelete = records.filter {it.isChecked}.toTypedArray()
+        val jsonData = Gson().toJson(mapOf(
+            "userId" to GoogleService.userID,
+            "targetList" to toDelete
+        ))
+        Connection.sendJsonPostRequest(
+            Connection.DELETE_MUSIC_PATH,
+            jsonData,
+            onRequestSuccess = {
+                Log.d("myTag", "Request was successful")
+                runOnUiThread{
+                    sendGetRecordsRequest()
                 }
-
-                // 获取响应代码
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    Log.d("myTag", "Request was successful")
-                    runOnUiThread{
-                        records.removeAll(targets)
-                        allrecords.removeAll(targets)
-                        mAdapter.notifyDataSetChanged()
-                    }
-                } else {
-                    Log.d("myTag", "Request failed with response code: $responseCode")
-                    runOnUiThread {
-                        Toast.makeText(this@GalleryActivity, "Fail to delete ${targets.size} record(s)", Toast.LENGTH_LONG).show()
-                    }
-
+            },
+            onRequestFail = {
+                runOnUiThread {
+                    Toast.makeText(this@GalleryActivity, "Fail to delete ${toDelete.size} record(s)", Toast.LENGTH_LONG).show()
                 }
-            } catch (e: IOException) {
-                Log.e("myTag", "Error sending request", e)
-            } finally {
-                connection.disconnect() // 关闭连接
+            },
+            onConnectionFail = {
+                runOnUiThread {
+                    Toast.makeText(this@GalleryActivity, "Fail to connect to sever", Toast.LENGTH_LONG).show()
+                }
             }
-        }.start()
+        )
     }
-    private fun sendGetRecordsRequest(urlString: String) {
-        Thread {
-            val url = URL(urlString)
-            var connection: HttpURLConnection? = null
-            try {
-                connection = url.openConnection() as HttpURLConnection
-                connection.apply {
-                    requestMethod = "POST"
-                    connectTimeout = 5000
-                    readTimeout = 5000
-                    doInput = true
-                    doOutput = true // 允許輸出
-                    setRequestProperty("Content-Type", "application/json") // 設置請求類型為 JSON
+    private fun sendGetRecordsRequest() {
+        val jsonData = """{"userId": "${GoogleService.userID}"}"""
+        Connection.sendJsonPostRequest(
+            Connection.GET_MUSIC_LIST_PATH,
+            jsonData,
+            onRequestSuccess = { connection ->
+                val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
+                Log.d("myTest", "Request was successful")
+                Log.d("myTest", parseAudioRecords(response).toString())
+                runOnUiThread {
+                    allrecords.clear()
+                    allrecords.addAll(parseAudioRecords(response))
+                    searchInput.setText("")
+                    searchDatabase("")
                 }
-
-                // 創建要傳輸的 JSON 數據
-                val jsonPayload = """{"userId": "${GoogleService.userID}"}"""
-                val outputStream = connection.outputStream
-                outputStream.write(jsonPayload.toByteArray())
-                outputStream.flush()
-                outputStream.close()
-
-                // 讀取響應
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
-                    Log.d("myTest", "Request was successful")
-                    Log.d("myTest", parseAudioRecords(response)[0].filePath)
-                    runOnUiThread {
-                        allrecords.clear()
-                        allrecords.addAll(parseAudioRecords(response))
-                        searchInput.setText("")
-                        searchDatabase("")
-                    }
-                } else {
-                    Log.d("myTag", "Request failed with response code: $responseCode")
-                }
-            } catch (e: Exception) {
-                Log.e("myTag", "Error sending POST request", e)
-            } finally {
-                connection?.disconnect()
             }
-        }.start()
+        )
     }
 
     private fun parseAudioRecords(jsonString: String): List<AudioRecord> {

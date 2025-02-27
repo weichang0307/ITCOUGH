@@ -17,6 +17,7 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.os.IBinder
 import android.widget.RemoteViews
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.example.itcough.MainActivity
 import com.example.itcough.NotificationActionReceiver
@@ -181,6 +182,9 @@ class ContinuousAudioRecorder: Service() {
             dataArray,
             onRequestSuccess = {
                 sendNotification(this, "File Saved", "")
+            },
+            onRequestFail = {
+                Toast.makeText(this, "Failed to save cough file", Toast.LENGTH_SHORT).show()
             }
         )
     }

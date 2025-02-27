@@ -21,6 +21,9 @@ object Connection {
     const val UPLOAD_TO_PUBLIC_MUSIC = "upload_to_public_music/"
     const val STOP_RECORD_PATH = "stop_record/"
     const val START_RECORD_PATH = "start_record/"
+    const val DELETE_MUSIC_PATH = "delete_music/"
+    const val GET_MUSIC_LIST_PATH = "get_music/"
+    const val RENAME_MUSIC_PATH = "rename_music/"
     fun sendJsonPostRequest(
         path: String,
         jsonData: String,
@@ -34,6 +37,7 @@ object Connection {
             val url = URL(urlString)
             var connection: HttpURLConnection? = null
             try {
+                Log.d("Connection", "jsonPostRequest to $urlString")
                 connection = url.openConnection() as HttpURLConnection
                 connection.apply {
                     requestMethod = "POST"

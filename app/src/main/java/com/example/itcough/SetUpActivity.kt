@@ -103,10 +103,15 @@ class SetUpActivity : ComponentActivity() {
         }
         setEditTextAction(nameInput) {
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
+                val name_ = getUserName()
+                if (name_ == null) {
+                    setUserData()
+                    return@setEditTextAction
+                }
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
                     mapOf(
-                        "name" to nameInput.text.toString(),
+                        "name" to name_,
                         "userId" to GoogleService.userID.toString()
                     )
                 )
@@ -114,10 +119,15 @@ class SetUpActivity : ComponentActivity() {
         }
         setEditTextAction(ageInput) {
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
+                val age_ = getUserAge()
+                if (age_ == null) {
+                    setUserData()
+                    return@setEditTextAction
+                }
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
                     mapOf(
-                        "age" to ageInput.text.toString(),
+                        "age" to age_,
                         "userId" to GoogleService.userID.toString()
                     )
                 )
@@ -125,16 +135,15 @@ class SetUpActivity : ComponentActivity() {
         }
         radioGroupGender.setOnCheckedChangeListener(){ _,id->
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
-                val gender = when (id) {
-                    R.id.radioMale -> "Male"
-                    R.id.radioFemale -> "Female"
-                    R.id.radioOther -> "Other"
-                    else -> null
+                val gender_ = getUserGender()
+                if (gender_ == null) {
+                    setUserData()
+                    return@setOnCheckedChangeListener
                 }
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
                     mapOf(
-                        "gender" to gender.toString(),
+                        "gender" to gender_,
                         "userId" to GoogleService.userID.toString()
                     )
                 )
@@ -142,17 +151,15 @@ class SetUpActivity : ComponentActivity() {
         }
         radioGroupEducation.setOnCheckedChangeListener(){ _,id->
             if (GoogleService.isSignIn(this) && Account.isSignUp) {
-                val education = when (id) {
-                    R.id.radioHighSchool -> "High School"
-                    R.id.radioBachelor -> "Bachelor"
-                    R.id.radioMaster -> "Master"
-                    R.id.radioDoctorate -> "Doctorate"
-                    else -> null
+                val education_ = getUserEducation()
+                if (education_ == null) {
+                    setUserData()
+                    return@setOnCheckedChangeListener
                 }
                 Account.sendSetUserInfoRequest(
                     GoogleService.userID.toString(),
                     mapOf(
-                        "education" to education.toString(),
+                        "education" to education_,
                         "userId" to GoogleService.userID.toString()
                     )
                 )
@@ -180,7 +187,57 @@ class SetUpActivity : ComponentActivity() {
 
 
     }
-
+    private fun getUserName () : String? {
+        val name = nameInput.text.toString()
+        if (name.isEmpty()) {
+            Toast.makeText(this, "User name can not be empty", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        return name
+    }
+    private fun getUserAge () : String? {
+        val age = ageInput.text.toString()
+        if (age.isEmpty()) {
+            Toast.makeText(this, "User age can not be empty", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        if (age.toInt() < 18 || age.toInt() > 65) {
+            Toast.makeText(this, "User age must between 18 and 65", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        return age
+    }
+    private fun getUserGender () : String? {
+        val gender = when (radioGroupGender.checkedRadioButtonId) {
+            R.id.radioMale -> "Male"
+            R.id.radioFemale -> "Female"
+            R.id.radioOther -> "Other"
+            else -> null
+        }
+        if (gender == null) {
+            Toast.makeText(this, "choose your gender", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        return gender
+    }
+    private fun getUserEducation () : String? {
+        val education = when (radioGroupEducation.checkedRadioButtonId) {
+            R.id.radioHighSchool -> "High School"
+            R.id.radioBachelor -> "Bachelor"
+            R.id.radioMaster -> "Master"
+            R.id.radioDoctorate -> "Doctorate"
+            else -> null
+        }
+        if (education == null) {
+            Toast.makeText(this, "choose your education level", Toast.LENGTH_SHORT).show()
+            return null
+        }
+        return education
+    }
+    private fun getUserMusicProficiency () : String? {
+        val musicProficiency = (seekBarMusicProficiency.progress + 1).toString()
+        return musicProficiency
+    }
     override fun onResume() {
         super.onResume()
         updateUserUI()

@@ -21,6 +21,25 @@
             android:text="Processing..."
             android:textColor="@color/white"/>
     </LinearLayout>
+    <Button
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/signUpButton"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="80dp"
+        android:paddingVertical="20dp"
+        android:text="register"
+        android:background="@color/white"
+        android:backgroundTint="@color/purple_500"
+        android:elevation="1dp"
+        android:textSize="15sp"
+        android:textColor="@color/white"
+        android:layout_gravity="center">
+    </Button>
     <LinearLayout
         android:elevation="1dp"
         android:layout_width="match_parent"
@@ -69,21 +88,7 @@
                     android:textColor="@color/black"
                     android:layout_gravity="center">
                 </Button>
-                <Button
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:id="@+id/signUpButton"
-                    android:visibility="invisible"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sign Up"
-                    android:background="@drawable/circle_button_background"
-                    android:backgroundTint="@color/blue"
-                    android:layout_marginStart="20dp"
-                    android:elevation="1dp"
-                    android:textColor="@color/white"
-                    android:layout_gravity="center">
-                </Button>
+
             </LinearLayout>
             <View
                 android:layout_width="match_parent"
@@ -100,7 +105,7 @@
                 android:gravity="center"
                 android:textSize="20sp"
                 android:background="@color/yellow_transparent"
-                android:text="This is a new account\nPlease sign up first"/>
+                android:text="This is a new account\nPlease register first"/>
 
             <ScrollView
                 android:id="@+id/infoView"

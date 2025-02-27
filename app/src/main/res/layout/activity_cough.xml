@@ -122,58 +122,5 @@
             android:paddingBottom="20dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </RelativeLayout>
-    <LinearLayout
-        android:id="@+id/bottomSheet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        app:behavior_hideable="true"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="10dp"
-        android:elevation="8dp"
-        android:background="@color/white">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginEnd="90dp">
-            <ImageButton
-                android:id="@+id/btnDelete"
-                android:clickable="false"
-                android:backgroundTint="@color/grayDarkDisabled"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_round_delete"/>
-            <TextView
-                android:id="@+id/tvDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/grayDarkDisabled"
-                android:text="Delete"/>
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageButton
-                android:id="@+id/btnEdit"
-                android:clickable="false"
-                android:backgroundTint="@color/grayDarkDisabled"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_edit"/>
-            <TextView
-                android:id="@+id/tvEdit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/grayDarkDisabled"
-                android:text="Edit"/>
-
-        </LinearLayout>
-    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

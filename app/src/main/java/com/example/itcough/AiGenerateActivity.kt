@@ -166,6 +166,16 @@ class AiGenerateActivity : ComponentActivity() {
                     Toast.makeText(this@AiGenerateActivity, "Music Successfully Saved", Toast.LENGTH_SHORT).show()
                     refreshUI()
                 }
+            },
+            onRequestFail = {
+                runOnUiThread {
+                    Toast.makeText(this@AiGenerateActivity, "Fail to save music", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onConnectionFail = {
+                runOnUiThread {
+                    Toast.makeText(this@AiGenerateActivity, "Fail to connect to server", Toast.LENGTH_SHORT).show()
+                }
             }
         )
     }

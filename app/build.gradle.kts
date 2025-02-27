@@ -48,6 +48,8 @@ android {
 
 dependencies {
     implementation("com.arthenica:ffmpeg-kit-full:6.0.LTS")
+    implementation("com.google.android.material:material:1.9.0")  // Material Design 组件
+    implementation("androidx.viewpager2:viewpager2:1.0.0")  // ViewPager2
     implementation(libs.gson)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var cardFile: CardView
     private lateinit var cardSetting: CardView
     private lateinit var cardCreate: CardView
+    private lateinit var cardAnalysis: CardView
     private lateinit var cardStart: ImageButton
     private lateinit var btnAccount: ImageButton
 
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
         cardStart = findViewById(R.id.cardStart)
         cardCreate = findViewById(R.id.cardCreate)
         cardSetting = findViewById(R.id.cardSettings)
+        cardAnalysis = findViewById(R.id.cardAnalysis)
         btnAccount = findViewById(R.id.btnAccount)
         GoogleService.updateUserInfo(this)
         if (GoogleService.isSignIn(this)) {
@@ -63,6 +65,13 @@ class MainActivity : ComponentActivity() {
         cardSetting.setOnClickListener{
             if (Account.isSignIn(this)){
                 startActivity(Intent(this, SetUpActivity::class.java))
+            }else{
+                startActivity(Intent(this, SetUpActivity::class.java))
+            }
+        }
+        cardAnalysis.setOnClickListener{
+            if (Account.isSignIn(this)){
+                startActivity(Intent(this, AnalysisActivity::class.java))
             }else{
                 startActivity(Intent(this, SetUpActivity::class.java))
             }
