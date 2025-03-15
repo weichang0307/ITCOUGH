@@ -156,6 +156,7 @@ class SignUpActivity : ComponentActivity() {
         val musicProficiency = getUserMusicProficiency() ?: return null
         return mapOf(
             "userId" to GoogleService.userID.toString(),
+            "userEmail" to GoogleService.userEmail.toString(),
             "name" to name,
             "age" to age,
             "gender" to gender,

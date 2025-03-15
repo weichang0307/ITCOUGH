@@ -1,6 +1,8 @@
 package com.example.itcough
 
 import android.os.Bundle
+import android.view.View
+import android.widget.ImageButton
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,16 +26,27 @@ class AnalysisActivity : AppCompatActivity() {
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         val viewPager = findViewById<ViewPager2>(R.id.viewPager)
 
+
+
         // 设置 ViewPager 适配器
         val adapter = ViewPagerAdapter(this)
         viewPager.adapter = adapter
+        val topbar = findViewById<View>(R.id.topBarLayout)
+        topbar.findViewById<ImageButton>(R.id.btnLeft).setOnClickListener{
+            finish()
+        }
+        val btnRight = topbar.findViewById<ImageButton>(R.id.btnRight)
+        btnRight.setOnClickListener{
+            viewPager.adapter = ViewPagerAdapter(this)
+        }
+        btnRight.setBackgroundResource(R.drawable.ic_renew)
 
         // 绑定 TabLayout 和 ViewPager2
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "Cough"
-                1 -> "Music"
-                2 -> "Co-Create"
+                0 -> "day"
+                1 -> "week"
+                2 -> "month"
                 else -> "Tab"
             }
         }.attach()

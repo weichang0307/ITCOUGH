@@ -55,11 +55,6 @@
             android:label="@string/title_activity_record_setting"
             android:theme="@style/Theme.ITCOUGH" />
         <activity
-            android:name=".SettingActivity"
-            android:exported="false"
-            android:label="@string/title_activity_login"
-            android:theme="@style/Theme.ITCOUGH" />
-        <activity
             android:name=".AdvanceSetting"
             android:exported="false"
             android:label="@string/title_activity_advance_setting"
